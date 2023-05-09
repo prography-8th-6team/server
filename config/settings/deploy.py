@@ -8,6 +8,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 ALLOWED_HOSTS = ['*']
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
