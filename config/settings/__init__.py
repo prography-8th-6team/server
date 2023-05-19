@@ -39,6 +39,7 @@ DJANGO_APPS = [
 
 PROJECT_APPS = [
     'applications.cert',
+    'applications.accounts',
 ]
 
 THIRD_PARTY_APPS = [
