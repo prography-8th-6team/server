@@ -18,11 +18,11 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
-from applications.cert.views import UserViewSet
+from applications.users.views import UserViewSet
 
 router = SimpleRouter(trailing_slash=False)
 
-router.register('v1/api/cert', UserViewSet, 'cert')
+router.register('v1/user/auth', UserViewSet, 'kakaoLogin')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

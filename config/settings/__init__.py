@@ -38,7 +38,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
-    'applications.cert',
+    'applications.users',
 ]
 
 THIRD_PARTY_APPS = [
@@ -111,4 +111,4 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'cert.User'
+AUTH_USER_MODEL = 'users.User'
