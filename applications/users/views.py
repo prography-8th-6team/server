@@ -12,7 +12,7 @@ from applications.users.utils import kakaoGetUserInfo
 
 
 class UserViewSet(ModelViewSet):
-    queryset = User
+    queryset = User.objects.all()
     serializer_class = UserSerializer
 
     @action(methods=["POST"], detail=False)
