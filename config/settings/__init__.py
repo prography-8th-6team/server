@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
 from pathlib import Path
 import environ
 
@@ -39,6 +38,7 @@ DJANGO_APPS = [
 
 PROJECT_APPS = [
     'applications.users',
+    'applications.travel',
 ]
 
 THIRD_PARTY_APPS = [
@@ -96,7 +96,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -115,6 +114,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # THIRD PARTY CUSTOM
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'applications.base.authentication.JsonWebTokenAuthentication',
+    ],
     "EXCEPTION_HANDLER": "applications.base.error_handler.server_error_handler",
 }
 
