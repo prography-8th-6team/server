@@ -112,4 +112,9 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# THIRD PARTY CUSTOM
+REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "applications.base.error_handler.server_error_handler",
+}
+
 AUTH_USER_MODEL = 'users.User'
