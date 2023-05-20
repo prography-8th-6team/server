@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path, include
+
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import SimpleRouter
-from applications.cert.views import UserViewSet
-router = SimpleRouter(trailing_slash=False)
 
-router.register('v1/api/cert', UserViewSet, 'cert')
+from applications.users.views import UserViewSet
+
 schema_view = get_schema_view(
     openapi.Info(
         title="JERNYLIST",
@@ -37,6 +37,10 @@ schema_view = get_schema_view(
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
+
+router = SimpleRouter(trailing_slash=False)
+
+router.register('v1/user/auth', UserViewSet, 'kakaoLogin')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

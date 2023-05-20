@@ -12,8 +12,16 @@ def kakaoGetUserInfo(access_token):
                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
 
     response = requests.get(kakaoURL + getKakaoUserInfoPath, headers=headers)
-    kakaoInfo = response.json()
 
-    kakaoId = kakaoInfo['id']
-    nickname = kakaoInfo['kakao_account']['profile']['nickname']
-    return kakaoId, nickname
+    try:
+        kakaoInfo = response.json()
+
+        kakaoId = kakaoInfo['id']
+        nickname = kakaoInfo['kakao_account']['profile']['nickname']
+
+        kakaoInfo = {"id": kakaoId, "nickname": nickname}
+        return kakaoInfo
+    except Exception:
+        return None
+
+

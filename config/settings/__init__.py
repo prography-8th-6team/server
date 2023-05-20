@@ -38,7 +38,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
-    'applications.cert',
+    'applications.users',
 ]
 
 THIRD_PARTY_APPS = [
@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "applications.base.middleware.JsonWebTokenMiddleWare"
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -112,4 +113,9 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'cert.User'
+# THIRD PARTY CUSTOM
+REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "applications.base.error_handler.server_error_handler",
+}
+
+AUTH_USER_MODEL = 'users.User'
