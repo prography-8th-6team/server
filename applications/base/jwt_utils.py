@@ -28,5 +28,7 @@ def decode_jwt(token):
     """
     암호화 된 jwt 데이터를 복호화하는 함수입니다.
     """
-    return jwt.decode(token, settings.SECRET_KEY, 'HS256')
-
+    try:
+        return jwt.decode(token, settings.SECRET_KEY, 'HS256')
+    except Exception:
+        return None

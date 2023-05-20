@@ -16,24 +16,29 @@ class JsonWebTokenMiddleWare(object):
 
     def __call__(self, request):
         if (
-            request.path != "/v1/user/auth/"
+            request.path != "/v1/user/auth/kakao"
             and "admin" not in request.path
+            and "swagger" not in request.path
         ):
-            headers = request.headers
-
-            access_token = headers.get("Authorization", None)
+            access_token = request.headers.get("Authorization", None)
 
             if not access_token:
                 raise PermissionDenied()
 
-            payload = decode_jwt(access_token[6:])
-            user_id = payload.get("user_id", None)
-            if not user_id:
-                raise PermissionDenied()
+            auth_type, token = access_token.split(' ')
+            if auth_type == "Bearer":
+                payload = decode_jwt(token)
+                if not payload:
+                    return PermissionDenied()
 
-            try:
-                User.objects.get(id=user_id)
-                response = self.get_response(request)
-                return response
-            except Exception as e:
-                return PermissionDenied()
+                user_id = payload.get("user_id", None)
+                if not user_id:
+                    raise PermissionDenied()
+
+                try:
+                    user = User.objects.get(id=user_id)
+                except User.DoesNotExist:
+                    return PermissionDenied()
+
+        response = self.get_response(request)
+        return response
