@@ -22,6 +22,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import SimpleRouter
 
+from applications.travel.views import TravelViewSet
 from applications.users.views import UserViewSet
 
 schema_view = get_schema_view(
@@ -41,6 +42,7 @@ schema_view = get_schema_view(
 router = SimpleRouter(trailing_slash=False)
 
 router.register('v1/user/auth', UserViewSet, 'kakaoLogin')
+router.register('v1/travel', TravelViewSet, 'kakaoLogin')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
