@@ -1,5 +1,4 @@
-
-# Create your views here.
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -26,25 +25,31 @@ class UserViewSet(ModelViewSet):
         fcm_token = data.get('fcm_token')
         access_token = data.get('access_token')
 
-        kakaoInfo = kakaoGetUserInfo(access_token)
-        if not kakaoInfo:
+        kakao_info = kakaoGetUserInfo(access_token)
+
+        if not kakao_info:
             return certification_failure
 
         try:
-            user = User.objects.get(social_id=kakaoInfo["id"])
+            user = User.objects.get(social_id=kakao_info["id"])
+            message = 'login successful'
+            status_code = status.HTTP_201_CREATED
+
         except User.DoesNotExist:
             user = User.objects.create(
-                nickname=kakaoInfo["nickname"],
-                social_id=kakaoInfo["id"],
+                nickname=kakao_info["nickname"],
+                social_id=kakao_info["id"],
                 fcm_token=fcm_token,
             )
+            message = 'registration successful'
+            status_code = status.HTTP_201_CREATED
 
         token = generate_jwt(user.id)
 
         results = {"token": token}
         data_response = {
-            "message": "OPERATION_SUCCESS",
+            "message": message,
             "results": results
         }
 
-        return Response(data_response)
+        return Response(data_response, status=status_code)
