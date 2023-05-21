@@ -33,7 +33,7 @@ class UserViewSet(ModelViewSet):
         try:
             user = User.objects.get(social_id=kakao_info["id"])
             message = 'login successful'
-            status_code = status.HTTP_201_CREATED
+            status_code = status.HTTP_200_OK
 
         except User.DoesNotExist:
             user = User.objects.create(
