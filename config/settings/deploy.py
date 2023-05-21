@@ -36,3 +36,47 @@ AWS_S3_OBJECT_PARAMETERS = {
 STATIC_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['file']},
+    'formatters': {
+        'verbose': {
+            'format': (
+                '%(asctime)s %(levelname)s %(name)s %(message)s'
+                ' [PID:%(process)d:%(threadName)s]')},
+        'simple': {
+            'format': '%(levelname)s %(message)s'}},
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'}},
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/home/ubuntu/server/test.log',
+            'maxBytes': 10*1024*1024,  # 10MB
+            'backupCount': 5,
+            'formatter': 'verbose'}
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True},
+        'django.server': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True},
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True},
+        'unicommerce': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True}
+    }}

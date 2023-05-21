@@ -9,4 +9,4 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('nickname', 'fcm_token')
+        fields = ('nickname', 'fcm_token', 'social_id')
