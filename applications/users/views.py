@@ -1,20 +1,40 @@
-from rest_framework import status
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema, no_body
+from rest_framework import status, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import GenericViewSet
 
 from applications.base.jwt_utils import generate_jwt
 from applications.base.response import certification_failure
 from applications.users.models import User
 from applications.users.serializers import UserSerializer
-from applications.users.utils import kakaoGetUserInfo
+from applications.users.utils import kakao_get_user_info
 
 
-class UserViewSet(ModelViewSet):
+class UserViewSet(mixins.RetrieveModelMixin,
+                  mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
+                  GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(methods=["POST"], detail=False)
+    @swagger_auto_schema(
+        operation_summary="카카오 로그인 API",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'access_token': openapi.Schema(type=openapi.TYPE_STRING),
+                'fcm_token': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['access_token']
+        ),
+        responses={
+            200: "operation_success",
+            401: "certification_failure",
+        }
+    )
+    @action(methods=["POST"], detail=False, url_path="auth/kakao")
     def kakao(self, request):
         """
         카카오 로그인 시 진입하는 API입니다.
@@ -25,7 +45,7 @@ class UserViewSet(ModelViewSet):
         fcm_token = data.get('fcm_token')
         access_token = data.get('access_token')
 
-        kakao_info = kakaoGetUserInfo(access_token)
+        kakao_info = kakao_get_user_info(access_token)
 
         if not kakao_info:
             return certification_failure
@@ -53,3 +73,25 @@ class UserViewSet(ModelViewSet):
         }
 
         return Response(data_response, status=status_code)
+
+    @swagger_auto_schema(
+        operation_summary="유저 개인 프로필 조회 API",
+        request_body=no_body,
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="유저 수정 API",
+        request_body=no_body,
+    )
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="유저 회원 탈퇴 API",
+        request_body=no_body,
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+
