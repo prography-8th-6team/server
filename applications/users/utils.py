@@ -16,7 +16,7 @@ def kakao_get_user_info(access_token):
     try:
         kakao_data = response.json()
         kakao_id = kakao_data['id']
-        nickname = kakao_data['nickname']
+        nickname = kakao_data['kakao_account']['profile']['nickname']
 
         kakao_info = {"id": kakao_id, "nickname": nickname}
         return kakao_info
