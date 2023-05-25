@@ -11,7 +11,7 @@ class Billing(BaseMoneyModel):
 
 class SubBilling(BaseMoneyModel):
     member = models.ForeignKey(Member, related_name='sub_billings', on_delete=models.CASCADE)
-    travel = models.ForeignKey(Travel, related_name='sub_billings', on_delete=models.CASCADE)
+    billing = models.ForeignKey(Billing, related_name='sub_billings', on_delete=models.CASCADE)
 
 
 class BillingLine(BaseMoneyModel):
@@ -25,4 +25,4 @@ class BillingLine(BaseMoneyModel):
 class Settlement(BaseMoneyModel):
     billing_line = models.ForeignKey(BillingLine, related_name='settlements', on_delete=models.CASCADE)
     member = models.ForeignKey(Member, related_name='settlements', on_delete=models.CASCADE)
-    status = models.CharField(max_length=15, choices=PaymentStatus.CHOICES, default=PaymentStatus.NOT_CHARGED)
+    status = models.CharField(max_length=31, choices=PaymentStatus.CHOICES, default=PaymentStatus.NOT_CHARGED)

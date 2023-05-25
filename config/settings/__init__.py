@@ -40,6 +40,7 @@ PROJECT_APPS = [
     'applications.users',
     'applications.travel',
     'applications.billings',
+    'applications.base',
 ]
 
 THIRD_PARTY_APPS = [
