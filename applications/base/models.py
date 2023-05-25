@@ -10,3 +10,21 @@ class BaseAdminModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Currency(models.Model):
+    code = models.CharField(max_length=3)
+    name = models.CharField(max_length=100)
+    rate = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
+
+class BaseMoneyModel(models.Model):
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    captured_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        abstract = True
