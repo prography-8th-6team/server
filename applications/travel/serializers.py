@@ -1,12 +1,20 @@
 from rest_framework import serializers
 
 from applications.travel.models import Travel, Member
+from applications.users.models import User
+
+
+class UserTinySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['nickname']
 
 
 class TravelSerializer(serializers.ModelSerializer):
+    members = UserTinySerializer(many=True)
 
     def create(self, validated_data):
-        print("====== create ======")
         request = self.context["request"]
         data = request.data.copy()
 
@@ -25,4 +33,4 @@ class TravelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Travel
-        fields = '__all__'
+        fields = ["id", "user", "description", "members", "title", "start_date", "end_date"]
