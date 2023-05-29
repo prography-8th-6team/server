@@ -14,7 +14,7 @@ class Travel(BaseAdminModel):
     title = models.CharField(max_length=255, verbose_name="여행 제목")
     start_date = models.DateField(verbose_name="여행 시작 날짜")
     end_date = models.DateField(verbose_name="여행 끝나는 날짜")
-    description = models.CharField(max_length=13, verbose_name="여행 메모")
+    description = models.CharField(max_length=13, null=True, verbose_name="여행 메모")
 
     def __str__(self):
         return self.title
