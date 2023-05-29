@@ -12,7 +12,7 @@ class UserTinySerializer(serializers.ModelSerializer):
 
 
 class TravelSerializer(serializers.ModelSerializer):
-    members = UserTinySerializer(many=True)
+    members = UserTinySerializer(many=True, read_only=True)
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -30,6 +30,14 @@ class TravelSerializer(serializers.ModelSerializer):
             is_admin=True,
         )
         return travel
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        member_list = []
+        for member in data["members"]:
+            member_list.append(member["nickname"])
+        data['members'] = member_list
+        return data
 
     class Meta:
         model = Travel
