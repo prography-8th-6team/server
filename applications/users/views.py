@@ -6,14 +6,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from applications.base.jwt_utils import generate_jwt
-from applications.base.response import certification_failure
+from applications.base.response import certification_failure, not_found_data, delete_success
 from applications.users.models import User
 from applications.users.serializers import UserSerializer
 from applications.users.utils import kakao_get_user_info
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
-                  mixins.UpdateModelMixin,
                   mixins.DestroyModelMixin,
                   GenericViewSet):
     queryset = User.objects.all()
@@ -74,24 +73,49 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
         return Response(data_response, status=status_code)
 
+    def get_object(self, pk):
+        try:
+            return User.objects.get(id=pk)
+        except User.DoesNotExist:
+            return None
+
     @swagger_auto_schema(
         operation_summary="유저 개인 프로필 조회 API",
         request_body=no_body,
     )
-    def retrieve(self, request, *args, **kwargs):
-        return super().retrieve(request, *args, **kwargs)
+    def retrieve(self, request, pk, *args, **kwargs):
+        user = self.get_object(pk)
+        if not user:
+            return not_found_data
+
+        user_data = self.serializer_class(user).data
+        return Response(user_data)
 
     @swagger_auto_schema(
         operation_summary="유저 수정 API",
         request_body=no_body,
     )
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
+    def update(self, request, pk):
+        user = self.get_object(pk)
+        if not user:
+            return not_found_data
+
+        serializer = self.serializer_class(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_travel = serializer.save()
+            return Response(self.serializer_class(updated_travel).data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_summary="유저 회원 탈퇴 API",
         request_body=no_body,
     )
-    def destroy(self, request, *args, **kwargs):
-        return super().destroy(request, *args, **kwargs)
+    def destroy(self, request, pk):
+        user = self.get_object(pk)
+        if not user:
+            return not_found_data
+
+        user.delete()
+        return delete_success
 

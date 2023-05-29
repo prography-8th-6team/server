@@ -10,16 +10,14 @@ def generate_jwt(user_id):
     """
     jwt 신규 발급하는 함수입니다.
     """
-    print("=============== generate_jwt start ==============")
     iat = datetime.now()
-    expiredDate = iat + timedelta(weeks=2)
+    expired_date = iat + timedelta(weeks=2)
 
     payload = {
         "user_id": user_id,
-        "expired": expiredDate.strftime("%Y-%m-%d %H:%M:%S"),
+        "expired": expired_date.strftime("%Y-%m-%d %H:%M:%S"),
         "iat": iat.timestamp(),
     }
-    print("=============== generate_jwt end ==============")
 
     return jwt.encode(payload, settings.SECRET_KEY, 'HS256')
 
