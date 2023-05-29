@@ -57,7 +57,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/home/ubuntu/server/test.log',
+            'filename': '/home/ubuntu/deploy/server/jerny.log',
             'maxBytes': 10*1024*1024,  # 10MB
             'backupCount': 5,
             'formatter': 'verbose'}
