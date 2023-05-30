@@ -46,6 +46,8 @@ PROJECT_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'drf_yasg',
+    'djmoney',
+    'djmoney.contrib.exchange',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
@@ -123,3 +125,4 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'users.User'
+EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.FixerBackend'

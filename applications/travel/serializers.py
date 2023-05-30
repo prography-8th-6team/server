@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from applications.billings.serializers import BillingSerializer
 from applications.travel.models import Travel, Member
 from applications.users.models import User
 
@@ -13,6 +13,7 @@ class UserTinySerializer(serializers.ModelSerializer):
 
 class TravelSerializer(serializers.ModelSerializer):
     members = UserTinySerializer(many=True, read_only=True)
+    billings = BillingSerializer(many=True, read_only=True)
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -41,4 +42,14 @@ class TravelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Travel
-        fields = ["id", "description", "members", "title", "start_date", "end_date"]
+        fields = [
+            "id",
+            "description",
+            "members",
+            "title",
+            "start_date",
+            "end_date",
+            "total_captured_amount",
+            "total_amount",
+            "billings",
+        ]

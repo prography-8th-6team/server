@@ -2,6 +2,8 @@ from django.db import models
 
 # Create your models here.
 from applications.base.models import BaseAdminModel
+from applications.billings import CurrencyType
+
 from applications.users.models import User
 
 
@@ -15,9 +17,22 @@ class Travel(BaseAdminModel):
     start_date = models.DateField(verbose_name="여행 시작 날짜")
     end_date = models.DateField(verbose_name="여행 끝나는 날짜")
     description = models.CharField(max_length=13, null=True, verbose_name="여행 메모")
+    currency = models.CharField(max_length=15, choices=CurrencyType.CHOICES, default=CurrencyType.USD)
 
     def __str__(self):
         return self.title
+
+    @property
+    def billings(self):
+        return self.billings.all()
+
+    @property
+    def total_amount(self):
+        return sum(self.billings.all().values_list('total_amount', flat=True))
+
+    @property
+    def total_captured_amount(self):
+        return sum(self.billings.all().values_list('captured_amount', flat=True))
 
 
 class Member(BaseAdminModel):
@@ -29,4 +44,8 @@ class Member(BaseAdminModel):
     is_admin = models.BooleanField(verbose_name="최고 관리자 여부")
 
     def __str__(self):
+        return self.user.nickname
+
+    @property
+    def nickname(self):
         return self.user.nickname
