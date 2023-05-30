@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from applications.billings.models import Billing, Settlement
+
+admin.site.register([Billing, Settlement])

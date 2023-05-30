@@ -1,21 +1,14 @@
 from django.db import models
 
 from applications.base.models import BaseMoneyModel
-from applications.billings import BillingLineCategory, PaymentStatus
+from applications.billings import BillingLineCategory, SettlementStatus
 from applications.travel.models import Travel, Member
+from applications.users.models import User
 
 
 class Billing(BaseMoneyModel):
     travel = models.ForeignKey(Travel, related_name='billings', on_delete=models.CASCADE)
-
-
-class SubBilling(BaseMoneyModel):
-    member = models.ForeignKey(Member, related_name='sub_billings', on_delete=models.CASCADE)
-    billing = models.ForeignKey(Billing, related_name='sub_billings', on_delete=models.CASCADE)
-
-
-class BillingLine(BaseMoneyModel):
-    sub_billing = models.ForeignKey(SubBilling, related_name='billing_lines', on_delete=models.CASCADE)
+    title = models.CharField(max_length=31)
     image = models.ImageField()
     category = models.CharField(max_length=15, choices=BillingLineCategory.CHOICES, default=BillingLineCategory.FOOD)
     paid_by = models.ForeignKey(Member, related_name='billing_lines', on_delete=models.CASCADE)
@@ -23,6 +16,6 @@ class BillingLine(BaseMoneyModel):
 
 
 class Settlement(BaseMoneyModel):
-    billing_line = models.ForeignKey(BillingLine, related_name='settlements', on_delete=models.CASCADE)
+    billing = models.ForeignKey(Billing, related_name='settlements', on_delete=models.CASCADE)
     member = models.ForeignKey(Member, related_name='settlements', on_delete=models.CASCADE)
-    status = models.CharField(max_length=31, choices=PaymentStatus.CHOICES, default=PaymentStatus.NOT_CHARGED)
+    status = models.CharField(max_length=31, choices=SettlementStatus.CHOICES, default=SettlementStatus.NOT_CHARGED)
