@@ -33,7 +33,6 @@ class User(AbstractBaseUser, BaseAdminModel):
     """
     User Model 입니다.
     """
-    # TODO : social id = 숫자로 할 것인지, 문자로 할 것인지 (카카오는 숫자 대충 10자리, 네이버는 문자열)
     objects = UserManager()
 
     nickname = models.CharField(max_length=255, verbose_name="별명")
