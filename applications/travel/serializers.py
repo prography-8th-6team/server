@@ -41,4 +41,4 @@ class TravelSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Travel
-        fields = ["id", "user", "description", "members", "title", "start_date", "end_date"]
+        fields = ["id", "description", "members", "title", "start_date", "end_date"]
