@@ -24,7 +24,7 @@ from rest_framework import permissions
 from rest_framework.routers import SimpleRouter
 
 from applications.billings.views import BillingViewSet
-from applications.travel.views import TravelViewSet
+from applications.travels.views import TravelViewSet
 from applications.users.views import UserViewSet
 
 schema_view = get_schema_view(
@@ -43,8 +43,8 @@ schema_view = get_schema_view(
 
 router = SimpleRouter(trailing_slash=False)
 
-router.register('v1/user', UserViewSet, 'kakaoLogin')
-router.register('v1/travel', TravelViewSet, 'kakaoLogin')
+router.register('v1/users', UserViewSet, 'users')
+router.register('v1/travels', TravelViewSet, 'travels')
 router.register('v1/billings', BillingViewSet, 'billings')
 
 urlpatterns = [

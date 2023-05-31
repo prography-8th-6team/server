@@ -2,7 +2,7 @@ from django.db import models
 
 from applications.base.models import BaseMoneyModel
 from applications.billings import BillingLineCategory, SettlementStatus
-from applications.travel.models import Travel, Member
+from applications.travels.models import Travel, Member
 from applications.users.models import User
 
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from applications.billings.serializers import BillingSerializer
-from applications.travel.models import Travel, Member
+from applications.travels.models import Travel, Member
 from applications.users.models import User
 
 

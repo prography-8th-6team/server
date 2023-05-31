@@ -12,8 +12,8 @@ from applications.base.swaggers import billing_create_api_body
 from applications.billings import BillingLineCategory
 from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer
-from applications.travel.models import Travel, Member
-from applications.travel.serializers import TravelSerializer
+from applications.travels.models import Travel, Member
+from applications.travels.serializers import TravelSerializer
 from applications.users.models import User
 
 
@@ -95,7 +95,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         if not travel:
             return not_found_data
 
-        if travel.members.is_admin:
+        if request.user.id == travel.user.id:
             travel.delete()
             return delete_success
         else:

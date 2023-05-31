@@ -2,7 +2,7 @@ from moneyed import Money
 from rest_framework import serializers
 
 from applications.billings.models import Settlement, Billing
-from applications.travel.models import Member
+from applications.travels.models import Member
 
 
 class MemberSerializer(serializers.ModelSerializer):

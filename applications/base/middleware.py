@@ -19,7 +19,7 @@ class JsonWebTokenMiddleWare(object):
     def __call__(self, request):
         try:
             if (
-                request.path != "/v1/user/auth/kakao"
+                request.path != "/v1/users/auth/kakao"
                 and "admin" not in request.path
                 and "swagger" not in request.path
             ):
