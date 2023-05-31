@@ -38,7 +38,7 @@ DJANGO_APPS = [
 
 PROJECT_APPS = [
     'applications.users',
-    'applications.travel',
+    'applications.travels',
     'applications.billings',
     'applications.base',
 ]
