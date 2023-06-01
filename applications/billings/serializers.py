@@ -28,7 +28,6 @@ class SettlementSerializer(serializers.ModelSerializer):
 
 
 class BillingSerializer(serializers.ModelSerializer):
-    # paid_by = MemberSerializer(read_only=True)
     participants = serializers.SerializerMethodField()
 
     class Meta:
@@ -68,35 +67,12 @@ class BillingSerializer(serializers.ModelSerializer):
 
     def get_participants(self, obj):
         settlements = obj.settlements.all()
-        members = settlements.values_list('member', flat=True)
-        member_objects = Member.objects.filter(id__in=members)
-        serializer = MemberSerializer(member_objects, many=True)
-        return serializer.data
+        members = settlements.values_list('member__user__nickname', flat=True)
+        return members
 
-# class BillingSerializer(serializers.ModelSerializer):
-#     paid_by = MemberSerializer(read_only=True)
-#     participants = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = Billing
-#         fields = (
-#             'id',
-#             'travel',
-#             'title',
-#             'category',
-#             'paid_by',
-#             'paid_date',
-#             'total_amount',
-#             'total_amount_currency',
-#             'captured_amount',
-#             'participants',
-#         )
-#
-    def get_participants(self, obj):
-        settlements = obj.settlements.all()
-        members = settlements.values_list('member', flat=True)
-        member_objects = Member.objects.filter(id__in=members)
-        serializer = MemberSerializer(member_objects, many=True)
-        return serializer.data
-
-
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        paid_by = representation.get('paid_by')
+        if paid_by:
+            representation['paid_by'] = instance.paid_by.nickname
+        return representation
