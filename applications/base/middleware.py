@@ -38,17 +38,13 @@ class JsonWebTokenMiddleWare(object):
                     if not user_id:
                         raise PermissionDenied()
 
-                    try:
-                        User.objects.get(id=user_id)
-                    except User.DoesNotExist:
-                        raise PermissionDenied()
                 else:
                     raise PermissionDenied()
 
             response = self.get_response(request)
             return response
 
-        except (PermissionDenied, User.DoesNotExist):
+        except PermissionDenied:
             return authorization_error
 
         except ExpiredSignatureError:
