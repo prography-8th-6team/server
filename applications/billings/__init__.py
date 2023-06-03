@@ -44,9 +44,13 @@ class CurrencyType:
     USD = 'USD'
     EUR = 'EUR'
     KRW = 'KRW'
+    JPY = 'JPY'
+    GBP = 'GBP'
 
     CHOICES = (
         (USD, 'USD'),
         (EUR, 'EUR'),
-        (KRW, 'KRW')
+        (KRW, 'KRW'),
+        (JPY, 'JPY'),
+        (GBP, 'GBP')
     )
