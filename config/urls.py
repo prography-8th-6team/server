@@ -23,7 +23,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import SimpleRouter
 
-from applications.billings.views import BillingViewSet
+from applications.billings.views import BillingViewSet, get_currencies
 from applications.travels.views import TravelViewSet
 from applications.users.views import UserViewSet
 
@@ -49,7 +49,7 @@ router.register('v1/billings', BillingViewSet, 'billings')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    path('v1/currencies/', get_currencies),
     path('', include(router.urls)),
 ]
 

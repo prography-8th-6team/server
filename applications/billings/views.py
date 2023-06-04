@@ -2,14 +2,20 @@ from djmoney.money import Money
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from applications.base.swaggers import dispatch_settlement_body
-from applications.billings import SettlementStatus
+from applications.billings import SettlementStatus, CurrencyType
 from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer
+
+
+@api_view(['GET'])
+def get_currencies(request):
+    # todo: 섹시한 메서드 있으면 변경
+    return Response({'message': [choice[0] for choice in CurrencyType.CHOICES]}, status=status.HTTP_200_OK)
 
 
 class BillingViewSet(mixins.RetrieveModelMixin,

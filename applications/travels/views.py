@@ -65,8 +65,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         travel = self.get_object(pk)
         if not travel:
             return not_found_data
-
-        travel_data = self.serializer_class(travel).data
+        travel_data = self.serializer_class(travel, context={'request': request}).data
         return Response(travel_data)
 
     @swagger_auto_schema(

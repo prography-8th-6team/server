@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from applications.billings import CurrencyType
+from applications.billings.models import Settlement
 from applications.billings.serializers import BillingSerializer
 from applications.travels.models import Travel, Member
 from applications.users.models import User
@@ -16,6 +17,7 @@ class UserTinySerializer(serializers.ModelSerializer):
 class TravelSerializer(serializers.ModelSerializer):
     members = UserTinySerializer(many=True, read_only=True)
     billings = BillingSerializer(many=True, read_only=True)
+    my_total_billing = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -59,12 +61,13 @@ class TravelSerializer(serializers.ModelSerializer):
             "currency",
             "total_captured_amount",
             "total_amount",
+            'my_total_billing',
             "billings",
         ]
 
     def get_my_total_billing(self, instance):
         request = self.context.get('request', None)
         if request:
-            settlements = instance.settlements.filter(user=request.user, billing__travel=instance)
+            settlements = Settlement.objects.filter(user=request.user, billing__travel=instance)
             return sum([settlement.total_amount.amount for settlement in settlements])
         return 0
