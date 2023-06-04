@@ -17,3 +17,34 @@ WSGI_APPLICATION = 'config.wsgi.develop.application'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+LOGGING['handlers'] = {
+    'file': {
+        'level': 'INFO',
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': '/home/ubuntu/deploy/server/jerny.log',
+        'maxBytes': 10*1024*1024,  # 10MB
+        'backupCount': 5,
+        'formatter': 'verbose'
+    }
+}
+
+DEVELOP_LOG_DIR = '/var/log/server/develop/'
+
+LOGGING['handlers'] = {
+    'file': {
+        'level': 'INFO',
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': f'{DEVELOP_LOG_DIR}jerny.log',
+        'maxBytes': 10*1024*1024,  # 10MB
+        'backupCount': 5,
+        'formatter': 'verbose'
+    },
+    'error': {
+        'class': 'logging.handlers.RotatingFileHandler',
+        'filename': f'{DEVELOP_LOG_DIR}/error.log',
+        'maxBytes': 10 * 1024 * 1024,  # 10MB
+        'backupCount': 5,
+        'formatter': 'verbose'
+    }
+}

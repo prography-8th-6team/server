@@ -7,6 +7,7 @@ operation_failure = Response(status=status.HTTP_400_BAD_REQUEST, data={"message"
 
 delete_success = Response(status=status.HTTP_204_NO_CONTENT, data={"message": "DELETE_SUCCESS"})
 not_found_data = Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "NOT_FOUND_DATA"})
+invalid_date_range = Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "INVALID_DATE_RANGE"})
 certification_failure = Response(status=status.HTTP_401_UNAUTHORIZED, data={'message': 'CERTIFICATION_FAILURE'})
 permission_error = Response(status=status.HTTP_403_FORBIDDEN, data={'message': 'PERMISSION_ERROR'})
 

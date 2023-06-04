@@ -1,5 +1,4 @@
 # Create your views here.
-from django.db.models import F
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import mixins, status
@@ -7,14 +6,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from applications.base.response import operation_failure, not_found_data, delete_success, permission_error
+from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
+    invalid_date_range
 from applications.base.swaggers import billing_create_api_body
-from applications.billings import BillingLineCategory
-from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer
-from applications.travels.models import Travel, Member
+from applications.travels.models import Travel
 from applications.travels.serializers import TravelSerializer
-from applications.users.models import User
+from applications.travels.utils import check_date_order
 
 
 class TravelViewSet(mixins.CreateModelMixin,
@@ -44,11 +42,13 @@ class TravelViewSet(mixins.CreateModelMixin,
     )
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        title = data.get("title", None)
         start_date = data.get("start_date", None)
         end_date = data.get("end_date", None)
 
-        if title and start_date and end_date:
+        if start_date and end_date:
+            if not check_date_order(start_date, end_date):
+                return invalid_date_range
+
             serializer = self.serializer_class(data=request.data, context={"request": request})
             if serializer.is_valid():
                 serializer.save()

@@ -126,3 +126,52 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = 'users.User'
 EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.FixerBackend'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['file']
+    },
+    'formatters': {
+        'verbose': {
+            'format': (
+                '%(asctime)s %(levelname)s %(name)s %(message)s'
+                ' [PID:%(process)d:%(threadName)s]')
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'}
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'}
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'django.server': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'unicommerce': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'error': {
+            'handlers': ['error'],
+            'level': 'ERROR',
+            'propagate': True
+        }
+    }
+}

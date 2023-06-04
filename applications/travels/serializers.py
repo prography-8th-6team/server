@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from applications.billings import CurrencyType
 from applications.billings.serializers import BillingSerializer
 from applications.travels.models import Travel, Member
 from applications.users.models import User
@@ -22,9 +24,13 @@ class TravelSerializer(serializers.ModelSerializer):
         travel = Travel.objects.create(
             user=request.user,
             title=data.get("title"),
+            color=data.get("color"),
             start_date=data.get("start_date"),
             end_date=data.get("end_date"),
+            description=data.get("description", None),
+            currency=data.get("currency", CurrencyType.USD),
         )
+
         Member.objects.create(
             user=request.user,
             travel=travel,
@@ -49,6 +55,8 @@ class TravelSerializer(serializers.ModelSerializer):
             "title",
             "start_date",
             "end_date",
+            "color",
+            "currency",
             "total_captured_amount",
             "total_amount",
             "billings",
