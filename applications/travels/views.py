@@ -1,4 +1,3 @@
-# Create your views here.
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import mixins, status
@@ -120,6 +119,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         data['travel'] = travel.pk
         settlements = data.pop('settlements', None)
         currency = data.pop('currency', None)
+        currency = currency if currency and travel.currency == currency else travel.currency
         serializer = BillingSerializer(data=data, settlements=settlements, currency=currency)
         serializer.is_valid(raise_exception=True)
         serializer.save()

@@ -67,17 +67,17 @@ class BillingViewSet(mixins.RetrieveModelMixin,
     def settle(self, request, pk):
         data = request.data.copy()
         # serializer 로직 이용하기
-        member = data.get('member', None)
+        user = data.get('user', None)
         amount = data.get('amount', None)
         # 본인의 것만 정산 가능한건지? 확인이 필요할듯!
-        if not member or not amount:
+        if not user or not amount:
             return Response({'message': 'member와 amount 값이 반드시 포함되어야 합니다.'},
                             status=status.HTTP_400_BAD_REQUEST)
         if amount < 0:
             return Response({'message': 'amount의 값은 0이상만 가능합니다..'},
                             status=status.HTTP_400_BAD_REQUEST)
         billing = self.get_queryset().first()
-        settlement = Settlement.objects.filter(billing=billing, member__id=member).first()
+        settlement = Settlement.objects.filter(billing=billing, user=user).first()
         if not billing or not settlement:
             return Response({'message': '해당하는 정산 데이터가 없습니다.'},
                             status=status.HTTP_404_NOT_FOUND)
