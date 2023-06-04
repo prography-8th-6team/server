@@ -12,7 +12,7 @@ class Travel(BaseAdminModel):
     여행 관련 Model 입니다.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="여행 리스트 방장")
-    members = models.ManyToManyField(User, through="Member", related_name="members", verbose_name="여행 멤버들")
+    members = models.ManyToManyField(User, through="Member", related_name="travels", verbose_name="여행 멤버들")
     title = models.CharField(max_length=255, verbose_name="여행 제목")
     color = models.CharField(max_length=255, verbose_name="여행 색상")
     start_date = models.DateField(verbose_name="여행 시작 날짜")
