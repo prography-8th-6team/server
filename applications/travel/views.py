@@ -4,6 +4,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import mixins, status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -120,6 +121,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         data['travel'] = travel.pk
         settlements = data.pop('settlements', None)
         currency = data.pop('currency', None)
+        currency = currency if currency and travel.currency == currency else travel.currency
         serializer = BillingSerializer(data=data, settlements=settlements, currency=currency)
         serializer.is_valid(raise_exception=True)
         serializer.save()

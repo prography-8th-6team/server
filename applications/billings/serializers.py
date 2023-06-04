@@ -2,7 +2,8 @@ from moneyed import Money
 from rest_framework import serializers
 
 from applications.billings.models import Settlement, Billing
-from applications.travel.models import Member
+from applications.travel.models import Member, Travel
+from applications.users.models import User
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -55,8 +56,8 @@ class BillingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         billing = Billing.objects.create(**validated_data)
         for settlement_data in self.settlements_data:
-            member_id = settlement_data.get('member')
-            member = Member.objects.get(id=member_id)
+            user_id = settlement_data.get('user')
+            member = User.objects.get(members__members=user_id, members=billing.travel)
             amount = settlement_data.get('amount')
             currency = self.currency if self.currency else 'USD'
             money = Money(amount, currency)

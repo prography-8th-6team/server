@@ -32,7 +32,7 @@ billing_create_api_body = openapi.Schema(
 dispatch_settlement_body = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
-        'member': openapi.Schema(type=openapi.TYPE_INTEGER),
+        'user': openapi.Schema(type=openapi.TYPE_INTEGER),
         'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
     },
     required=['member', 'amount'],
