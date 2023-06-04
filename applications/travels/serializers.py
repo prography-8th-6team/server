@@ -16,7 +16,6 @@ class UserTinySerializer(serializers.ModelSerializer):
 class TravelSerializer(serializers.ModelSerializer):
     members = UserTinySerializer(many=True, read_only=True)
     billings = BillingSerializer(many=True, read_only=True)
-    participants = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         request = self.context["request"]
