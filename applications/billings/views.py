@@ -1,21 +1,28 @@
 from djmoney.money import Money
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from applications.base.swaggers import dispatch_settlement_body
+from applications.base.swaggers import dispatch_settlement_body, authorizaion_parameters
 from applications.billings import SettlementStatus, CurrencyType
 from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_summary="전체 화폐 리스트 조회 API",
+)
 @api_view(['GET'])
 def get_currencies(request):
     # todo: 섹시한 메서드 있으면 변경
-    return Response({'message': [choice[0] for choice in CurrencyType.CHOICES]}, status=status.HTTP_200_OK)
+    data_response = {
+        "message": "OPERATION_SUCCESS",
+        "results": [choice[0] for choice in CurrencyType.CHOICES]
+    }
+    return Response(data_response)
 
 
 class BillingViewSet(mixins.RetrieveModelMixin,
@@ -34,8 +41,7 @@ class BillingViewSet(mixins.RetrieveModelMixin,
     @swagger_auto_schema(
         operation_summary="billing 상세 API",
         manual_parameters=[
-            openapi.Parameter('Authorized', openapi.IN_HEADER, description="accesstoken이 없으면 이용 못합니다.",
-                              type=openapi.TYPE_STRING, required=True),
+            authorizaion_parameters
         ]
     )
     def retrieve(self, request, *args, **kwargs):
@@ -44,8 +50,7 @@ class BillingViewSet(mixins.RetrieveModelMixin,
     @swagger_auto_schema(
         operation_summary="billing 삭제 API",
         manual_parameters=[
-            openapi.Parameter('Authorized', openapi.IN_HEADER, description="accesstoken이 없으면 이용 못합니다.",
-                              type=openapi.TYPE_STRING, required=True),
+            authorizaion_parameters
         ],
     )
     def destroy(self, request, *args, **kwargs):
@@ -54,8 +59,7 @@ class BillingViewSet(mixins.RetrieveModelMixin,
     @swagger_auto_schema(
         operation_summary="billing 수정 API",
         manual_parameters=[
-            openapi.Parameter('Authorized', openapi.IN_HEADER, description="accesstoken이 없으면 이용 못합니다.",
-                              type=openapi.TYPE_STRING, required=True),
+            authorizaion_parameters
         ],
     )
     def update(self, request, *args, **kwargs):
@@ -64,8 +68,7 @@ class BillingViewSet(mixins.RetrieveModelMixin,
     @swagger_auto_schema(
         operation_summary="billing 생성 API",
         manual_parameters=[
-            openapi.Parameter('Authorized', openapi.IN_HEADER, description="accesstoken이 없으면 이용 못합니다.",
-                              type=openapi.TYPE_STRING, required=True),
+            authorizaion_parameters
         ],
         request_body=dispatch_settlement_body,
     )

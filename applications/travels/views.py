@@ -7,7 +7,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
     invalid_date_range
-from applications.base.swaggers import billing_create_api_body
+from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
 from applications.billings.serializers import BillingSerializer
 from applications.travels.models import Travel
 from applications.travels.serializers import TravelSerializer
@@ -22,22 +22,44 @@ class TravelViewSet(mixins.CreateModelMixin,
     queryset = Travel.objects.all()
     serializer_class = TravelSerializer
 
-    @swagger_auto_schema(
-        operation_summary="여행 전체 리스트 API",
-        request_body=no_body,
-    )
     def get_object(self, pk):
         try:
             return Travel.objects.get(id=pk)
         except Travel.DoesNotExist:
             return None
 
+    @swagger_auto_schema(
+        operation_summary="여행 전체 리스트 API",
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        request_body=no_body,
+    )
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        serializer = self.get_serializer(self.queryset, many=True)
+        data_response = {
+            "message": "OPERATION_SUCCESS",
+            "results": serializer.data
+        }
+        return Response(data_response)
 
     @swagger_auto_schema(
         operation_summary="여행 생성 API",
-        request_body=no_body,
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'start_date': openapi.Schema(type=openapi.FORMAT_DATE),
+                'end_date': openapi.Schema(type=openapi.FORMAT_DATE),
+                'color': openapi.Schema(type=openapi.TYPE_STRING),
+                'description': openapi.Schema(type=openapi.TYPE_STRING),
+                'currency': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+            required=['title', 'color', 'currency', 'start_date', 'end_date'],
+        ),
     )
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -51,7 +73,11 @@ class TravelViewSet(mixins.CreateModelMixin,
             serializer = self.serializer_class(data=request.data, context={"request": request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data)
+                results = {
+                    "message": "OPERATION_SUCCESS",
+                    "results": serializer.data
+                }
+                return Response(results)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -59,18 +85,37 @@ class TravelViewSet(mixins.CreateModelMixin,
 
     @swagger_auto_schema(
         operation_summary="여행 상세 API",
-        request_body=no_body,
+        manual_parameters=[
+            authorizaion_parameters
+        ],
     )
     def retrieve(self, request, pk, *args, **kwargs):
         travel = self.get_object(pk)
         if not travel:
             return not_found_data
         travel_data = self.serializer_class(travel, context={'request': request}).data
-        return Response(travel_data)
+        data_response = {
+            "message": "OPERATION_SUCCESS",
+            "results": travel_data
+        }
+        return Response(data_response)
 
     @swagger_auto_schema(
         operation_summary="여행 수정 API",
-        request_body=no_body,
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'start_date': openapi.Schema(type=openapi.FORMAT_DATE),
+                'end_date': openapi.Schema(type=openapi.FORMAT_DATE),
+                'color': openapi.Schema(type=openapi.TYPE_STRING),
+                'description': openapi.Schema(type=openapi.TYPE_STRING),
+                'currency': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
     )
     def update(self, request, pk):
         travel = self.get_object(pk)
@@ -80,13 +125,19 @@ class TravelViewSet(mixins.CreateModelMixin,
         serializer = self.serializer_class(travel, data=request.data, partial=True)
         if serializer.is_valid():
             updated_travel = serializer.save()
-            return Response(self.serializer_class(updated_travel).data)
+            results = {
+                "message": "OPERATION_SUCCESS",
+                "results": self.serializer_class(updated_travel).data
+            }
+            return Response(results)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return operation_failure
 
     @swagger_auto_schema(
         operation_summary="여행 삭제 탈퇴",
-        request_body=no_body,
+        manual_parameters=[
+            authorizaion_parameters
+        ],
     )
     def destroy(self, request, pk, *args, **kwargs):
         travel = self.get_object(pk)
@@ -102,8 +153,7 @@ class TravelViewSet(mixins.CreateModelMixin,
     @swagger_auto_schema(
         operation_summary="billing 생성 API",
         manual_parameters=[
-            openapi.Parameter('Authorized', openapi.IN_HEADER, description="accesstoken이 없으면 이용 못합니다.",
-                              type=openapi.TYPE_STRING, required=True),
+            authorizaion_parameters
         ],
         request_body=billing_create_api_body,
     )
