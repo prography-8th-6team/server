@@ -6,7 +6,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from applications.base.jwt_utils import generate_access_jwt, generate_refresh_jwt
-from applications.base.response import certification_failure, not_found_data, delete_success, same_data_failure
+from applications.base.response import certification_failure, not_found_data, delete_success, same_data_failure, \
+    operation_failure
+from applications.base.swaggers import authorizaion_parameters
 from applications.users.models import User
 from applications.users.serializers import UserSerializer
 from applications.users.utils import kakao_get_user_info, token_equality_check
@@ -28,10 +30,6 @@ class UserViewSet(mixins.RetrieveModelMixin,
             },
             required=['access_token']
         ),
-        responses={
-            200: "operation_success",
-            401: "certification_failure",
-        }
     )
     @action(methods=["POST"], detail=False, url_path="auth/kakao")
     def kakao(self, request):
@@ -82,7 +80,9 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
     @swagger_auto_schema(
         operation_summary="유저 개인 프로필 조회 API",
-        request_body=no_body,
+        manual_parameters=[
+            authorizaion_parameters
+        ],
     )
     def retrieve(self, request, pk, *args, **kwargs):
         user = self.get_object(pk)
@@ -94,7 +94,19 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
     @swagger_auto_schema(
         operation_summary="유저 수정 API",
-        request_body=no_body,
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'nickname': openapi.Schema(type=openapi.TYPE_STRING),
+                'fcm_token': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def update(self, request, pk):
         user = self.get_object(pk)
@@ -106,11 +118,17 @@ class UserViewSet(mixins.RetrieveModelMixin,
             updated_travel = serializer.save()
             return Response(self.serializer_class(updated_travel).data)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return operation_failure
 
     @swagger_auto_schema(
         operation_summary="유저 회원 탈퇴 API",
-        request_body=no_body,
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        responses={
+            204: "DELETE_SUCCESS - 유저 삭제 성공",
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def destroy(self, request, pk):
         user = self.get_object(pk)
@@ -121,6 +139,18 @@ class UserViewSet(mixins.RetrieveModelMixin,
         return delete_success
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type='object',
+        properties={
+            'access_token': openapi.Schema(type='string', description='The access token'),
+            'refresh_token': openapi.Schema(type='string', description='The refresh token'),
+        },
+        required=['access_token', 'refresh_token']
+    ),
+    operation_summary="토큰 재발급 API"
+)
 @api_view(["POST"])
 def jwt_refresh_token(request):
     data = request.data
@@ -139,4 +169,4 @@ def jwt_refresh_token(request):
         "message": "operation_success",
         "results": results
     }
-    return Response(data_response, status=status.HTTP_200_OK)
+    return Response(data_response)

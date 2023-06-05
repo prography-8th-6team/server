@@ -37,3 +37,9 @@ dispatch_settlement_body = openapi.Schema(
     },
     required=['member', 'amount'],
 )
+
+
+authorizaion_parameters = openapi.Parameter(
+    'Authorization', openapi.IN_HEADER,
+    description="accesstoken은 필수입니다.",
+    type=openapi.TYPE_STRING, required=True)
