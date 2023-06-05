@@ -1,15 +1,15 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status, mixins
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from applications.base.jwt_utils import generate_jwt
-from applications.base.response import certification_failure, not_found_data, delete_success
+from applications.base.jwt_utils import generate_access_jwt, generate_refresh_jwt
+from applications.base.response import certification_failure, not_found_data, delete_success, same_data_failure
 from applications.users.models import User
 from applications.users.serializers import UserSerializer
-from applications.users.utils import kakao_get_user_info
+from applications.users.utils import kakao_get_user_info, token_equality_check
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
@@ -51,7 +51,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
         try:
             user = User.objects.get(social_id=kakao_info["id"])
-            message = 'login successful'
+            message = 'LOGIN_SUCCESSFUL'
             status_code = status.HTTP_200_OK
 
         except User.DoesNotExist:
@@ -60,12 +60,13 @@ class UserViewSet(mixins.RetrieveModelMixin,
                 social_id=kakao_info["id"],
                 fcm_token=fcm_token,
             )
-            message = 'registration successful'
+            message = 'REGISTRATION_SUCCESSFUL'
             status_code = status.HTTP_201_CREATED
 
-        token = generate_jwt(user.id)
+        access_token = generate_access_jwt(user.id)
+        refresh_token = generate_refresh_jwt(user.id)
 
-        results = {"token": token}
+        results = {"token": access_token, "refresh_token": refresh_token}
         data_response = {
             "message": message,
             "results": results
@@ -119,3 +120,23 @@ class UserViewSet(mixins.RetrieveModelMixin,
         user.delete()
         return delete_success
 
+
+@api_view(["POST"])
+def jwt_refresh_token(request):
+    data = request.data
+
+    access_token = data.get("access_token", None)
+    refresh_token = data.get("refresh_token", None)
+
+    if access_token == refresh_token:
+        return same_data_failure
+
+    results = token_equality_check(access_token, refresh_token)
+    if not results:
+        return certification_failure
+
+    data_response = {
+        "message": "operation_success",
+        "results": results
+    }
+    return Response(data_response, status=status.HTTP_200_OK)

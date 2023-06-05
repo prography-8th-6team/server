@@ -25,7 +25,7 @@ from rest_framework.routers import SimpleRouter
 
 from applications.billings.views import BillingViewSet, get_currencies
 from applications.travels.views import TravelViewSet
-from applications.users.views import UserViewSet
+from applications.users.views import UserViewSet, jwt_refresh_token
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -49,8 +49,10 @@ router.register('v1/billings', BillingViewSet, 'billings')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('v1/currencies/', get_currencies),
     path('', include(router.urls)),
+
+    path('v1/currencies', get_currencies),
+    path('v1/refresh_token', jwt_refresh_token),
 ]
 
 if settings.DEBUG:

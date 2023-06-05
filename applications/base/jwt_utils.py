@@ -6,10 +6,7 @@ import jwt
 from django.conf import settings
 
 
-def generate_jwt(user_id):
-    """
-    jwt 신규 발급하는 함수입니다.
-    """
+def generate_access_jwt(user_id):
     iat = datetime.now()
     expired_date = iat + timedelta(weeks=2)
 
@@ -22,11 +19,32 @@ def generate_jwt(user_id):
     return jwt.encode(payload, settings.SECRET_KEY, 'HS256')
 
 
+def generate_refresh_jwt(user_id):
+    iat = datetime.now()
+    expired_date = iat + timedelta(weeks=4)
+
+    payload = {
+        "user_id": user_id,
+        "expired": expired_date.strftime("%Y-%m-%d %H:%M:%S"),
+        "iat": iat.timestamp(),
+    }
+
+    return jwt.encode(payload, settings.SECRET_KEY, 'HS256')
+
+
 def decode_jwt(token):
-    """
-    암호화 된 jwt 데이터를 복호화하는 함수입니다.
-    """
     try:
         return jwt.decode(token, settings.SECRET_KEY, 'HS256')
-    except Exception:
+    except:
         return None
+
+
+def check_jwt_expired_date(now_date, expired_date):
+    now_date = datetime.strptime(now_date, "%Y-%m-%d %H:%M:%S")
+    expired_date = datetime.strptime(expired_date, "%Y-%m-%d %H:%M:%S")
+
+    if expired_date <= now_date:
+        return True
+    else:
+        return False
+
