@@ -35,7 +35,7 @@ dispatch_settlement_body = openapi.Schema(
         'user': openapi.Schema(type=openapi.TYPE_INTEGER),
         'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
     },
-    required=['member', 'amount'],
+    required=['user', 'amount'],
 )
 
 
