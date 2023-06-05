@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
     invalid_date_range
 from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
-from applications.billings.serializers import BillingSerializer
+from applications.billings.serializers import BillingSerializer, MemberSerializer
 from applications.travels.models import Travel
 from applications.travels.serializers import TravelSerializer
 from applications.travels.utils import check_date_order
@@ -27,6 +27,12 @@ class TravelViewSet(mixins.CreateModelMixin,
             return Travel.objects.get(id=pk)
         except Travel.DoesNotExist:
             return None
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action == 'list':
+            return queryset.filter(members=self.request.user)
+        return queryset
 
     @swagger_auto_schema(
         operation_summary="여행 전체 리스트 API",
@@ -175,3 +181,10 @@ class TravelViewSet(mixins.CreateModelMixin,
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk):
+        travel = self.get_object(pk)
+        members_list = travel.members.all()
+        serializer = MemberSerializer(members_list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
