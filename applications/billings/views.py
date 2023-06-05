@@ -71,6 +71,7 @@ class BillingViewSet(mixins.RetrieveModelMixin,
             authorizaion_parameters
         ],
         request_body=dispatch_settlement_body,
+        responses={200: BillingSerializer()}
     )
     @action(detail=True, methods=['post'])
     def settle(self, request, pk):
@@ -97,4 +98,15 @@ class BillingViewSet(mixins.RetrieveModelMixin,
         billing.captured_amount += money
         settlement.save(update_fields=['captured_amount', 'status'])
         billing.save(update_fields=['captured_amount'])
-        return Response({'message': 'success'}, status=status.HTTP_200_OK)
+        response_data = {
+            'id': pk,
+            'travel': billing.travel.pk,
+            'title': billing.title,
+            'category': billing.category,
+            'paid_by': billing.paid_by.nickname,
+            'paid_date': billing.paid_date,
+            'total_amount': billing.total_amount.amount,
+            'captured_amount': billing.captured_amount.amount,
+            'total_amount_currency': str(billing.total_amount.currency),
+        }
+        return Response({'message': 'OPERATION_SUCCESS', 'result': response_data}, status=status.HTTP_200_OK)

@@ -156,6 +156,8 @@ class TravelViewSet(mixins.CreateModelMixin,
             authorizaion_parameters
         ],
         request_body=billing_create_api_body,
+        responses={201: BillingSerializer(),
+                   400: 'Operation Error.'}
     )
     @action(detail=True, methods=['post'])
     def billings(self, request, pk):
