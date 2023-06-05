@@ -18,7 +18,11 @@ from applications.billings.serializers import BillingSerializer
 @api_view(['GET'])
 def get_currencies(request):
     # todo: 섹시한 메서드 있으면 변경
-    return Response({'message': [choice[0] for choice in CurrencyType.CHOICES]}, status=status.HTTP_200_OK)
+    data_response = {
+        "message": "OPERATION_SUCCESS",
+        "results": [choice[0] for choice in CurrencyType.CHOICES]
+    }
+    return Response(data_response)
 
 
 class BillingViewSet(mixins.RetrieveModelMixin,

@@ -37,7 +37,11 @@ class TravelViewSet(mixins.CreateModelMixin,
     )
     def list(self, request, *args, **kwargs):
         serializer = self.get_serializer(self.queryset, many=True)
-        return Response(serializer.data)
+        data_response = {
+            "message": "OPERATION_SUCCESS",
+            "results": serializer.data
+        }
+        return Response(data_response)
 
     @swagger_auto_schema(
         operation_summary="여행 생성 API",
@@ -69,7 +73,11 @@ class TravelViewSet(mixins.CreateModelMixin,
             serializer = self.serializer_class(data=request.data, context={"request": request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data)
+                results = {
+                    "message": "OPERATION_SUCCESS",
+                    "results": serializer.data
+                }
+                return Response(results)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -86,7 +94,11 @@ class TravelViewSet(mixins.CreateModelMixin,
         if not travel:
             return not_found_data
         travel_data = self.serializer_class(travel, context={'request': request}).data
-        return Response(travel_data)
+        data_response = {
+            "message": "OPERATION_SUCCESS",
+            "results": travel_data
+        }
+        return Response(data_response)
 
     @swagger_auto_schema(
         operation_summary="여행 수정 API",
@@ -113,9 +125,13 @@ class TravelViewSet(mixins.CreateModelMixin,
         serializer = self.serializer_class(travel, data=request.data, partial=True)
         if serializer.is_valid():
             updated_travel = serializer.save()
-            return Response(self.serializer_class(updated_travel).data)
+            results = {
+                "message": "OPERATION_SUCCESS",
+                "results": self.serializer_class(updated_travel).data
+            }
+            return Response(results)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return operation_failure
 
     @swagger_auto_schema(
         operation_summary="여행 삭제 탈퇴",

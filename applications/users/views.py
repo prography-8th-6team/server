@@ -69,7 +69,6 @@ class UserViewSet(mixins.RetrieveModelMixin,
             "message": message,
             "results": results
         }
-
         return Response(data_response, status=status_code)
 
     def get_object(self, pk):
@@ -90,7 +89,11 @@ class UserViewSet(mixins.RetrieveModelMixin,
             return not_found_data
 
         user_data = self.serializer_class(user).data
-        return Response(user_data)
+        results = {
+            "message": "OPERATION_SUCCESS",
+            "results": user_data
+        }
+        return Response(results)
 
     @swagger_auto_schema(
         operation_summary="유저 수정 API",
@@ -116,7 +119,11 @@ class UserViewSet(mixins.RetrieveModelMixin,
         serializer = self.serializer_class(user, data=request.data, partial=True)
         if serializer.is_valid():
             updated_travel = serializer.save()
-            return Response(self.serializer_class(updated_travel).data)
+            results = {
+                "message": "OPERATION_SUCCESS",
+                "results": self.serializer_class(updated_travel).data
+            }
+            return Response(results)
         else:
             return operation_failure
 
@@ -166,7 +173,7 @@ def jwt_refresh_token(request):
         return certification_failure
 
     data_response = {
-        "message": "operation_success",
+        "message": "OPERATION_SUCCESS",
         "results": results
     }
     return Response(data_response)
