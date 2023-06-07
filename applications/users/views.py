@@ -30,6 +30,16 @@ class UserViewSet(mixins.RetrieveModelMixin,
             },
             required=['access_token']
         ),
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'token': openapi.Schema(type=openapi.TYPE_STRING),
+                    'refresh_token': openapi.Schema(type=openapi.TYPE_STRING),
+                }
+            ),
+            401: "CERTIFICATION_FAILURE - 카카오 토큰 인증 오류"
+        }
     )
     @action(methods=["POST"], detail=False, url_path="auth/kakao")
     def kakao(self, request):
@@ -82,6 +92,9 @@ class UserViewSet(mixins.RetrieveModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
+        responses={
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def retrieve(self, request, pk, *args, **kwargs):
         user = self.get_object(pk)
@@ -156,7 +169,11 @@ class UserViewSet(mixins.RetrieveModelMixin,
         },
         required=['access_token', 'refresh_token']
     ),
-    operation_summary="토큰 재발급 API"
+    operation_summary="토큰 재발급 API",
+    responses={
+        400: "SAME_DATA_FAILURE - access_token과 refresh_token의 값이 동일한 경우",
+        401: "CERTIFICATION_FAILURE - JWT 복호화 인증 오류"
+    }
 )
 @api_view(["POST"])
 def jwt_refresh_token(request):

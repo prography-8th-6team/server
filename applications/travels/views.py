@@ -57,7 +57,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'title': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'title': openapi.Schema(type=openapi.TYPE_STRING),
                 'start_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'end_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'color': openapi.Schema(type=openapi.TYPE_STRING),
@@ -66,6 +66,9 @@ class TravelViewSet(mixins.CreateModelMixin,
             },
             required=['title', 'color', 'currency', 'start_date', 'end_date'],
         ),
+        responses={
+            400: "INVALID_DATE_RANGE - 최종 날짜가 시작 날짜보다 이전인 경우",
+        }
     )
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -94,6 +97,9 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
+        responses={
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def retrieve(self, request, pk, *args, **kwargs):
         travel = self.get_object(pk)
@@ -114,7 +120,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'title': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'title': openapi.Schema(type=openapi.TYPE_STRING),
                 'start_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'end_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'color': openapi.Schema(type=openapi.TYPE_STRING),
@@ -122,6 +128,9 @@ class TravelViewSet(mixins.CreateModelMixin,
                 'currency': openapi.Schema(type=openapi.TYPE_STRING),
             },
         ),
+        responses={
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def update(self, request, pk):
         travel = self.get_object(pk)
@@ -144,6 +153,11 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
+        responses={
+            204: "삭제 성공",
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+            403: "PERMISSION_ERROR - 요청 유저와 여행 관리자가 다를 경우"
+        }
     )
     def destroy(self, request, pk, *args, **kwargs):
         travel = self.get_object(pk)
