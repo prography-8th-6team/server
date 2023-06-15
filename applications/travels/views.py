@@ -168,7 +168,6 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
-        request_body=billing_create_api_body,
         responses={201: BillingSerializer(),
                    400: 'Operation Error.'}
     )
@@ -201,7 +200,13 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
-        responses={200: 'success'}
+        request_body=no_body,
+        responses={200: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'token': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        )}
     )
     @action(detail=True, methods=['post'], url_path='generate-invite-token')
     def generate_invite_token(self, request, pk):
@@ -222,6 +227,12 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'token': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
         responses={200: 'success',
                    400: '이미 여행에 속해있는 멤버입니다.',
                    400: '유효한 토큰 값이 아닙니다. 다시발급 받아주세요.',
