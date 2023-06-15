@@ -66,7 +66,7 @@ class BillingViewSet(mixins.RetrieveModelMixin,
         return super().update(request, *args, **kwargs)
 
     @swagger_auto_schema(
-        operation_summary="billing 생성 API",
+        operation_summary="billing 정산 API",
         manual_parameters=[
             authorizaion_parameters
         ],

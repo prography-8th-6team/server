@@ -3,7 +3,7 @@ from rest_framework import serializers
 from applications.billings import CurrencyType
 from applications.billings.models import Settlement
 from applications.billings.serializers import BillingSerializer
-from applications.travels.models import Travel, Member
+from applications.travels.models import Travel, Member, Invite
 from applications.users.models import User
 
 
@@ -69,5 +69,16 @@ class TravelSerializer(serializers.ModelSerializer):
         request = self.context.get('request', None)
         if request:
             settlements = Settlement.objects.filter(user=request.user, billing__travel=instance)
-            return sum([settlement.total_amount.amount for settlement in settlements])
+            return sum([settlement.total_amount.amount - settlement.captured_amount.amount for settlement in settlements])
         return 0
+
+
+class InviteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invite
+        fields = (
+            'id',
+            'travel',
+            'link',
+            'expiry_date',
+        )

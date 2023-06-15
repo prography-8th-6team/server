@@ -1,3 +1,9 @@
+from collections import defaultdict
+from datetime import timedelta
+
+from django.db.models import Sum, ExpressionWrapper
+from django.utils import timezone
+from djmoney.money import Money
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import mixins, status
@@ -8,10 +14,11 @@ from rest_framework.viewsets import GenericViewSet
 from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
     invalid_date_range
 from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
+from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer, MemberSerializer
-from applications.travels.models import Travel
+from applications.travels.models import Travel, Invite
 from applications.travels.serializers import TravelSerializer
-from applications.travels.utils import check_date_order
+from applications.travels.utils import check_date_order, generate_random_string
 
 
 class TravelViewSet(mixins.CreateModelMixin,
@@ -175,7 +182,6 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
-        request_body=billing_create_api_body,
         responses={201: BillingSerializer(),
                    400: 'Operation Error.'}
     )
@@ -202,3 +208,63 @@ class TravelViewSet(mixins.CreateModelMixin,
         members_list = travel.members.all()
         serializer = MemberSerializer(members_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary="초대 토큰 생성 api",
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        request_body=no_body,
+        responses={200: openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'token': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        )}
+    )
+    @action(detail=True, methods=['post'], url_path='generate-invite-token')
+    def generate_invite_token(self, request, pk):
+        travel = self.get_object(pk)
+        today = timezone.now().date()
+        invite = Invite.objects.filter(travel=travel, expiry_date__gte=today).first()
+
+        if invite:
+            token = invite.token
+        else:
+            token = generate_random_string(9)
+            expiry_date = today + timedelta(days=7)
+            Invite.objects.create(travel=travel, token=token, expiry_date=expiry_date)
+        return Response({'message': 'success', 'toekn': token}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary="멤버 승인 api",
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'token': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={200: 'success',
+                   400: '이미 여행에 속해있는 멤버입니다.',
+                   400: '유효한 토큰 값이 아닙니다. 다시발급 받아주세요.',
+                   400: '이미 여행에 속해있는 멤버입니다.'}
+    )
+    @action(detail=False, methods=['post'])
+    def join(self, request):
+        token = request.data.get('token', None)
+        if not token:
+            return Response({'message': '토큰 값이 누락되어있습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        invite = Invite.objects.filter(token=token, expiry_date__gte=timezone.now().date()).first()
+        if not invite:
+            return Response({'message': '유효한 토큰 값이 아닙니다. 다시발급 받아주세요.'}, status=status.HTTP_404_NOT_FOUND)
+
+        travel = invite.travel
+        if travel.member.filter(user=request.user).exists():
+            return Response({'message': '이미 여행에 속해있는 멤버입니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        travel.members.add(self.request.user)
+        return Response({'message': 'success'}, status=status.HTTP_200_OK)
