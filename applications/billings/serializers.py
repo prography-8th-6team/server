@@ -57,7 +57,7 @@ class BillingSerializer(serializers.ModelSerializer):
         billing = Billing.objects.create(**validated_data)
         for settlement_data in self.settlements_data:
             user_id = settlement_data.get('user')
-            member = Member.objects.get(user_id=user_id, travel=billing.travel)
+            member = Member.objects.get(user__id=user_id, travel=billing.travel)
             amount = settlement_data.get('amount')
             currency = self.currency if self.currency else 'USD'
             money = Money(amount, currency)
