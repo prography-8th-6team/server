@@ -11,7 +11,7 @@ billing_create_api_body = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
         'title': openapi.Schema(type=openapi.TYPE_STRING),
-        'paid_by': openapi.Schema(type=openapi.TYPE_STRING),
+        'paid_by': openapi.Schema(type=openapi.TYPE_INTEGER),
         'paid_date': openapi.Schema(type=openapi.TYPE_STRING, format='date'),
         'currency': openapi.Schema(type=openapi.TYPE_STRING),
         'settlements': openapi.Schema(

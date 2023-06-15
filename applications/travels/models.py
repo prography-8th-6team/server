@@ -50,3 +50,12 @@ class Member(BaseAdminModel):
     @property
     def nickname(self):
         return self.user.nickname
+
+
+class Invite(BaseAdminModel):
+    travel = models.ForeignKey(Travel, related_name='invites', on_delete=models.CASCADE)
+    token = models.CharField(max_length=15)
+    expiry_date = models.DateField()
+
+    def __str__(self):
+        return self.travel.title
