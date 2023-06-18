@@ -36,6 +36,8 @@ class UserViewSet(mixins.RetrieveModelMixin,
                 properties={
                     'token': openapi.Schema(type=openapi.TYPE_STRING),
                     'refresh_token': openapi.Schema(type=openapi.TYPE_STRING),
+                    "user_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "nickname": openapi.Schema(type=openapi.TYPE_STRING)
                 }
             ),
             401: "CERTIFICATION_FAILURE - 카카오 토큰 인증 오류"
@@ -59,27 +61,22 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
         try:
             user = User.objects.get(social_id=kakao_info["id"])
-            message = 'LOGIN_SUCCESSFUL'
-            status_code = status.HTTP_200_OK
-
         except User.DoesNotExist:
             user = User.objects.create(
                 nickname=kakao_info["nickname"],
                 social_id=kakao_info["id"],
                 fcm_token=fcm_token,
             )
-            message = 'REGISTRATION_SUCCESSFUL'
-            status_code = status.HTTP_201_CREATED
 
         access_token = generate_access_jwt(user.id)
         refresh_token = generate_refresh_jwt(user.id)
 
-        results = {"token": access_token, "refresh_token": refresh_token}
+        results = {"token": access_token, "refresh_token": refresh_token, "user_id": user.id, "nickname": user.nickname}
         data_response = {
-            "message": message,
+            "message": "OPERATION_SUCCESS",
             "results": results
         }
-        return Response(data_response, status=status_code)
+        return Response(data_response)
 
     def get_object(self, pk):
         try:

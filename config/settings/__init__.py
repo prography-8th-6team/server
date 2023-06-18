@@ -48,6 +48,7 @@ THIRD_PARTY_APPS = [
     'drf_yasg',
     'djmoney',
     'djmoney.contrib.exchange',
+    'debug_toolbar',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
@@ -60,7 +61,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "applications.base.middleware.JsonWebTokenMiddleWare"
+    "applications.base.middleware.JsonWebTokenMiddleWare",
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+]
+
+INTERNAL_IPS = [
+    '127.0.0.1',
 ]
 
 ROOT_URLCONF = 'config.urls'
