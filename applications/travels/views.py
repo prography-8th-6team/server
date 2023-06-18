@@ -22,6 +22,7 @@ class TravelViewSet(mixins.CreateModelMixin,
                     mixins.DestroyModelMixin,
                     mixins.ListModelMixin,
                     GenericViewSet):
+    queryset = Travel.objects.all().order_by('-id')
     serializer_class = TravelSerializer
 
     def get_object(self, pk):
@@ -29,9 +30,6 @@ class TravelViewSet(mixins.CreateModelMixin,
             return Travel.objects.get(id=pk)
         except Travel.DoesNotExist:
             return None
-
-    def get_queryset(self):
-        return Travel.objects.all().order_by('-id')
 
     @swagger_auto_schema(
         operation_summary="여행 전체 리스트 API",
