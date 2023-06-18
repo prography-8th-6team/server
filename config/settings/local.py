@@ -17,7 +17,7 @@ WSGI_APPLICATION = 'config.wsgi.develop.application'
 
 STATIC_URL = 'static/'
 
-LOCAL_LOG_DIR = '/log/'
+LOCAL_LOG_DIR = BASE_DIR
 
 LOGGING['handlers'] = {
     'file': {
