@@ -70,7 +70,6 @@ class TravelViewSet(mixins.CreateModelMixin,
         }
     )
     def create(self, request, *args, **kwargs):
-        self.get_queryset()
         data = request.data.copy()
         start_date = data.get("start_date", None)
         end_date = data.get("end_date", None)
@@ -102,7 +101,6 @@ class TravelViewSet(mixins.CreateModelMixin,
         }
     )
     def retrieve(self, request, pk, *args, **kwargs):
-        self.get_queryset()
         travel = self.get_object(pk)
         if not travel:
             return not_found_data
