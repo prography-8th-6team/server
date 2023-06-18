@@ -1,9 +1,6 @@
-from collections import defaultdict
 from datetime import timedelta
 
-from django.db.models import Sum, ExpressionWrapper
 from django.utils import timezone
-from djmoney.money import Money
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import mixins, status
@@ -14,7 +11,6 @@ from rest_framework.viewsets import GenericViewSet
 from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
     invalid_date_range
 from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
-from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer, MemberSerializer
 from applications.travels.models import Travel, Invite
 from applications.travels.serializers import TravelSerializer
@@ -35,7 +31,7 @@ class TravelViewSet(mixins.CreateModelMixin,
             return None
 
     def get_queryset(self):
-        return Travel.objects.all()
+        return Travel.objects.all().order_by('-id')
 
     @swagger_auto_schema(
         operation_summary="여행 전체 리스트 API",
@@ -74,6 +70,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         }
     )
     def create(self, request, *args, **kwargs):
+        self.get_queryset()
         data = request.data.copy()
         start_date = data.get("start_date", None)
         end_date = data.get("end_date", None)
@@ -105,6 +102,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         }
     )
     def retrieve(self, request, pk, *args, **kwargs):
+        self.get_queryset()
         travel = self.get_object(pk)
         if not travel:
             return not_found_data
