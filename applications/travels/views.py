@@ -26,7 +26,6 @@ class TravelViewSet(mixins.CreateModelMixin,
                     mixins.DestroyModelMixin,
                     mixins.ListModelMixin,
                     GenericViewSet):
-    queryset = Travel.objects.all()
     serializer_class = TravelSerializer
 
     def get_object(self, pk):
@@ -36,10 +35,7 @@ class TravelViewSet(mixins.CreateModelMixin,
             return None
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        if self.action == 'list':
-            return queryset.filter(members=self.request.user)
-        return queryset
+        return Travel.objects.all()
 
     @swagger_auto_schema(
         operation_summary="여행 전체 리스트 API",
@@ -49,7 +45,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         request_body=no_body,
     )
     def list(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.queryset, many=True)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
         data_response = {
             "message": "OPERATION_SUCCESS",
             "results": serializer.data
