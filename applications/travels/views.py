@@ -178,8 +178,6 @@ class TravelViewSet(mixins.CreateModelMixin,
     )
     @action(detail=True, methods=['post'])
     def billings(self, request, pk):
-        # todo: currency 업데이트하는 부분 default currency와 다를 경우, 변환한 값 total에 저장
-        # 중복되는 코드들 utils에서 처리하기
         data = request.data.copy()
         travel = self.get_object(pk)
         if not travel:
