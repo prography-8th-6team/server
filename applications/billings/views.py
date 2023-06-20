@@ -76,10 +76,8 @@ class BillingViewSet(mixins.RetrieveModelMixin,
     @action(detail=True, methods=['post'])
     def settle(self, request, pk):
         data = request.data.copy()
-        # serializer 로직 이용하기
         user = data.get('user', None)
         amount = data.get('amount', None)
-        # 본인의 것만 정산 가능한건지? 확인이 필요할듯!
         if not user or not amount:
             return Response({'message': 'member와 amount 값이 반드시 포함되어야 합니다.'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -96,8 +94,10 @@ class BillingViewSet(mixins.RetrieveModelMixin,
         settlement.status = SettlementStatus.CHARGED if settlement.total_amount - settlement.captured_amount == 0 \
             else SettlementStatus.PARTIALLY_CHARGED
         billing.captured_amount += money
+        billing.status = SettlementStatus.CHARGED if billing.total_amount - billing.captured_amount == 0 \
+            else SettlementStatus.PARTIALLY_CHARGED
         settlement.save(update_fields=['captured_amount', 'status'])
-        billing.save(update_fields=['captured_amount'])
+        billing.save(update_fields=['captured_amount', 'status'])
         response_data = {
             'id': pk,
             'travel': billing.travel.pk,
