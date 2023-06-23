@@ -14,8 +14,10 @@ from rest_framework.viewsets import GenericViewSet
 from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
     invalid_date_range
 from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
+from applications.billings import SettlementStatus
 from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer, MemberSerializer
+from applications.billings.utils import calculate_balances
 from applications.travels.models import Travel, Invite
 from applications.travels.serializers import TravelSerializer
 from applications.travels.utils import check_date_order, generate_random_string
@@ -164,6 +166,37 @@ class TravelViewSet(mixins.CreateModelMixin,
             return permission_error
 
     @swagger_auto_schema(
+        methods=['get'],
+        operation_summary='계산도우미 조회 API',
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        responses={
+            200: openapi.Response(
+                description="Success",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                        'result': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'user': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                    'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
+                                    'paid_by': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                },
+                            ),
+                        ),
+                    },
+                ),
+            ),
+            400: "Operation Error.",
+        }
+    )
+    @swagger_auto_schema(
+        methods=['post'],
         operation_summary="billing 생성 API",
         manual_parameters=[
             authorizaion_parameters
@@ -172,19 +205,32 @@ class TravelViewSet(mixins.CreateModelMixin,
         responses={201: BillingSerializer(),
                    400: 'Operation Error.'}
     )
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['get', 'post'])
     def billings(self, request, pk):
         data = request.data.copy()
         travel = self.get_object(pk)
-        if not travel:
-            return Response({"message": "travel이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
-        data['travel'] = travel.pk
-        settlements = data.pop('settlements', None)
-        currency = data.pop('currency', None)
-        currency = currency if currency and travel.currency == currency else travel.currency
-        serializer = BillingSerializer(data=data, settlements=settlements, currency=currency)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if request.method == 'GET':
+            billings = travel.billings.exclude(status=SettlementStatus.CHARGED)
+            balances = []
+            for billing in billings:
+                for settlement in billing.settlements.exclude(status=SettlementStatus.CHARGED):
+                    data = {
+                        'user': settlement.user.id,
+                        'amount': settlement.remaining_amount,
+                        'paid_by': settlement.billing.id,
+                    }
+                    balances.append(data)
+            return Response({'message': 'success', 'result': balances}, status=status.HTTP_200_OK)
+        elif request.method == 'POST':
+            if not travel:
+                return Response({"message": "travel이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
+            data['travel'] = travel.pk
+            settlements = data.pop('settlements', None)
+            currency = data.pop('currency', None)
+            currency = currency if currency and travel.currency == currency else travel.currency
+            serializer = BillingSerializer(data=data, settlements=settlements, currency=currency)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['get'])
