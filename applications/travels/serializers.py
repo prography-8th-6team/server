@@ -18,6 +18,7 @@ class TravelSerializer(serializers.ModelSerializer):
     members = UserTinySerializer(many=True, read_only=True)
     billings = BillingSerializer(many=True, read_only=True)
     my_total_billing = serializers.SerializerMethodField()
+    created_by = serializers.SerializerMethodField(read_only=True)
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -53,6 +54,7 @@ class TravelSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "description",
+            "created_by",
             "members",
             "title",
             "start_date",
@@ -72,6 +74,8 @@ class TravelSerializer(serializers.ModelSerializer):
             return sum([settlement.total_amount.amount - settlement.captured_amount.amount for settlement in settlements])
         return 0
 
+    def get_created_by(self, instance):
+        return instance.user.id
 
 class InviteSerializer(serializers.ModelSerializer):
     class Meta:
