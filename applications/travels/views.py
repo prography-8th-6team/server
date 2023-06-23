@@ -1,9 +1,6 @@
-from collections import defaultdict
 from datetime import timedelta
 
-from django.db.models import Sum, ExpressionWrapper
 from django.utils import timezone
-from djmoney.money import Money
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import mixins, status
@@ -14,6 +11,7 @@ from rest_framework.viewsets import GenericViewSet
 from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
     invalid_date_range
 from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
+
 from applications.billings import SettlementStatus
 from applications.billings.models import Billing, Settlement
 from applications.billings.serializers import BillingSerializer, MemberSerializer
@@ -28,7 +26,6 @@ class TravelViewSet(mixins.CreateModelMixin,
                     mixins.DestroyModelMixin,
                     mixins.ListModelMixin,
                     GenericViewSet):
-    queryset = Travel.objects.all()
     serializer_class = TravelSerializer
 
     def get_object(self, pk):
@@ -38,10 +35,7 @@ class TravelViewSet(mixins.CreateModelMixin,
             return None
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        if self.action == 'list':
-            return queryset.filter(members=self.request.user)
-        return queryset
+        return Travel.objects.all().order_by('-id')
 
     @swagger_auto_schema(
         operation_summary="여행 전체 리스트 API",
@@ -51,7 +45,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         request_body=no_body,
     )
     def list(self, request, *args, **kwargs):
-        serializer = self.get_serializer(self.queryset, many=True)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
         data_response = {
             "message": "OPERATION_SUCCESS",
             "results": serializer.data
@@ -66,7 +60,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'title': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'title': openapi.Schema(type=openapi.TYPE_STRING),
                 'start_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'end_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'color': openapi.Schema(type=openapi.TYPE_STRING),
@@ -75,8 +69,12 @@ class TravelViewSet(mixins.CreateModelMixin,
             },
             required=['title', 'color', 'currency', 'start_date', 'end_date'],
         ),
+        responses={
+            400: "INVALID_DATE_RANGE - 최종 날짜가 시작 날짜보다 이전인 경우",
+        }
     )
     def create(self, request, *args, **kwargs):
+        self.get_queryset()
         data = request.data.copy()
         start_date = data.get("start_date", None)
         end_date = data.get("end_date", None)
@@ -103,8 +101,12 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
+        responses={
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def retrieve(self, request, pk, *args, **kwargs):
+        self.get_queryset()
         travel = self.get_object(pk)
         if not travel:
             return not_found_data
@@ -123,7 +125,7 @@ class TravelViewSet(mixins.CreateModelMixin,
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'title': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'title': openapi.Schema(type=openapi.TYPE_STRING),
                 'start_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'end_date': openapi.Schema(type=openapi.FORMAT_DATE),
                 'color': openapi.Schema(type=openapi.TYPE_STRING),
@@ -131,6 +133,9 @@ class TravelViewSet(mixins.CreateModelMixin,
                 'currency': openapi.Schema(type=openapi.TYPE_STRING),
             },
         ),
+        responses={
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def update(self, request, pk):
         travel = self.get_object(pk)
@@ -153,6 +158,11 @@ class TravelViewSet(mixins.CreateModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
+        responses={
+            204: "삭제 성공",
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+            403: "PERMISSION_ERROR - 요청 유저와 여행 관리자가 다를 경우"
+        }
     )
     def destroy(self, request, pk, *args, **kwargs):
         travel = self.get_object(pk)

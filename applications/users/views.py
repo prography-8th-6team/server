@@ -30,6 +30,18 @@ class UserViewSet(mixins.RetrieveModelMixin,
             },
             required=['access_token']
         ),
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'token': openapi.Schema(type=openapi.TYPE_STRING),
+                    'refresh_token': openapi.Schema(type=openapi.TYPE_STRING),
+                    "user_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                    "nickname": openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            ),
+            401: "CERTIFICATION_FAILURE - 카카오 토큰 인증 오류"
+        }
     )
     @action(methods=["POST"], detail=False, url_path="auth/kakao")
     def kakao(self, request):
@@ -49,27 +61,22 @@ class UserViewSet(mixins.RetrieveModelMixin,
 
         try:
             user = User.objects.get(social_id=kakao_info["id"])
-            message = 'LOGIN_SUCCESSFUL'
-            status_code = status.HTTP_200_OK
-
         except User.DoesNotExist:
             user = User.objects.create(
                 nickname=kakao_info["nickname"],
                 social_id=kakao_info["id"],
                 fcm_token=fcm_token,
             )
-            message = 'REGISTRATION_SUCCESSFUL'
-            status_code = status.HTTP_201_CREATED
 
         access_token = generate_access_jwt(user.id)
         refresh_token = generate_refresh_jwt(user.id)
 
-        results = {"token": access_token, "refresh_token": refresh_token}
+        results = {"token": access_token, "refresh_token": refresh_token, "user_id": user.id, "nickname": user.nickname}
         data_response = {
-            "message": message,
+            "message": "OPERATION_SUCCESS",
             "results": results
         }
-        return Response(data_response, status=status_code)
+        return Response(data_response)
 
     def get_object(self, pk):
         try:
@@ -82,6 +89,9 @@ class UserViewSet(mixins.RetrieveModelMixin,
         manual_parameters=[
             authorizaion_parameters
         ],
+        responses={
+            400: "NOT_FOUND_DATA - 유저를 찾을 수 없는 경우",
+        }
     )
     def retrieve(self, request, pk, *args, **kwargs):
         user = self.get_object(pk)
@@ -156,7 +166,11 @@ class UserViewSet(mixins.RetrieveModelMixin,
         },
         required=['access_token', 'refresh_token']
     ),
-    operation_summary="토큰 재발급 API"
+    operation_summary="토큰 재발급 API",
+    responses={
+        400: "SAME_DATA_FAILURE - access_token과 refresh_token의 값이 동일한 경우",
+        401: "CERTIFICATION_FAILURE - JWT 복호화 인증 오류"
+    }
 )
 @api_view(["POST"])
 def jwt_refresh_token(request):
