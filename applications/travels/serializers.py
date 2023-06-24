@@ -77,6 +77,7 @@ class TravelSerializer(serializers.ModelSerializer):
     def get_created_by(self, instance):
         return instance.user.id
 
+
 class InviteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Invite
