@@ -133,6 +133,8 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'users.User'
 EXCHANGE_BACKEND = 'djmoney.contrib.exchange.backends.FixerBackend'
 
+log_path = env('LOG_PATH')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
