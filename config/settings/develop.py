@@ -29,20 +29,18 @@ LOGGING['handlers'] = {
     }
 }
 
-DEVELOP_LOG_DIR = '/var/log/server/develop/'
-
 LOGGING['handlers'] = {
     'file': {
         'level': 'INFO',
         'class': 'logging.handlers.RotatingFileHandler',
-        'filename': f'{DEVELOP_LOG_DIR}jerny.log',
+        'filename': f'{log_path}jerny.log',
         'maxBytes': 10*1024*1024,  # 10MB
         'backupCount': 5,
         'formatter': 'verbose'
     },
     'error': {
         'class': 'logging.handlers.RotatingFileHandler',
-        'filename': f'{DEVELOP_LOG_DIR}/error.log',
+        'filename': f'{log_path}/error.log',
         'maxBytes': 10 * 1024 * 1024,  # 10MB
         'backupCount': 5,
         'formatter': 'verbose'
