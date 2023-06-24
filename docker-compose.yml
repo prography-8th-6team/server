@@ -3,10 +3,9 @@ services:
  nginx:
   image: nginx:latest
   ports:
-   - "80:80"
+   - "8001:8001"
   volumes:
    - ./nginx:/etc/nginx/conf.d
-   - static-data:/static
   depends_on:
    - web
  web:
