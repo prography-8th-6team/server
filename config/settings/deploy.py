@@ -37,20 +37,18 @@ STATIC_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-DEPLOY_LOG_DIR = '/var/log/server/deploy/'
-
 LOGGING['handlers'] = {
     'file': {
         'level': 'INFO',
         'class': 'logging.handlers.RotatingFileHandler',
-        'filename': f'{DEPLOY_LOG_DIR}jerny.log',
+        'filename': f'{log_path}jerny.log',
         'maxBytes': 10*1024*1024,  # 10MB
         'backupCount': 5,
         'formatter': 'verbose'
     },
     'error': {
         'class': 'logging.handlers.RotatingFileHandler',
-        'filename': f'{DEPLOY_LOG_DIR}/error.log',
+        'filename': f'{log_path}/error.log',
         'maxBytes': 10 * 1024 * 1024,  # 10MB
         'backupCount': 5,
         'formatter': 'verbose'
