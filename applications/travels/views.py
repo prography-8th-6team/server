@@ -12,7 +12,7 @@ from applications.base.response import operation_failure, not_found_data, delete
     invalid_date_range
 from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
 from applications.billings.serializers import BillingSerializer, MemberSerializer
-from applications.billings.utils import calculate_balances
+from applications.billings.utils import calculate_balances, calculate_user_amounts
 from applications.travels.models import Travel, Invite
 from applications.travels.serializers import TravelSerializer
 from applications.travels.utils import check_date_order, generate_random_string
@@ -182,15 +182,30 @@ class TravelViewSet(mixins.CreateModelMixin,
                     properties={
                         'message': openapi.Schema(type=openapi.TYPE_STRING),
                         'result': openapi.Schema(
-                            type=openapi.TYPE_ARRAY,
-                            items=openapi.Schema(
-                                type=openapi.TYPE_OBJECT,
-                                properties={
-                                    'user': openapi.Schema(type=openapi.TYPE_INTEGER),
-                                    'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
-                                    'paid_by': openapi.Schema(type=openapi.TYPE_INTEGER),
-                                },
-                            ),
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'balances': openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    items=openapi.Schema(
+                                        type=openapi.TYPE_OBJECT,
+                                        properties={
+                                            'user': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                            'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
+                                            'paid_by': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                        },
+                                    ),
+                                ),
+                                'user_amounts': openapi.Schema(
+                                    type=openapi.TYPE_ARRAY,
+                                    items=openapi.Schema(
+                                        type=openapi.TYPE_OBJECT,
+                                        properties={
+                                            'user': openapi.Schema(type=openapi.TYPE_STRING),
+                                            'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
+                                        },
+                                    ),
+                                ),
+                            },
                         ),
                     },
                 ),
@@ -220,10 +235,15 @@ class TravelViewSet(mixins.CreateModelMixin,
                     data = {
                         'user': settlement.user.id,
                         'amount': settlement.remaining_amount,
-                        'paid_by': settlement.billing.id,
+                        'paid_by': settlement.billing.paid_by.id,
                     }
                     balances.append(data)
-            return Response({'message': 'success', 'result': balances}, status=status.HTTP_200_OK)
+
+            response = {
+                'balances': calculate_balances(balances),
+                'user_amounts': calculate_user_amounts(balances)
+            }
+            return Response({'message': 'success', 'result': response}, status=status.HTTP_200_OK)
         elif request.method == 'POST':
             if not travel:
                 return Response({"message": "travel이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
