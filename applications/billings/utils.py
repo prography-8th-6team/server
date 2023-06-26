@@ -2,37 +2,40 @@ from decimal import Decimal
 
 
 def calculate_balances(transactions):
-    balances = {}
+    for i, t1 in enumerate(transactions):
+        for j, t2 in enumerate(transactions[i + 1:], i + 1):
+            if t1["user"] == t2["paid_by"] and t1["paid_by"] == t2["user"]:
+                t1["amount"] -= t2["amount"]
+                t2["amount"] = 0
 
-    for transaction in transactions:
-        user = transaction['user']
-        amount = transaction['amount']
-        paid_by = transaction['paid_by']
+    reduced_transactions = []
 
-        # Update the balances for the users
-        if user not in balances:
-            balances[user] = Decimal('0.00')
-        if paid_by not in balances:
-            balances[paid_by] = Decimal('0.00')
+    for t in transactions:
+        if t['amount'] == 0:
+            continue
+        if t["amount"] < 0:
+            t["user"], t["paid_by"] = t["paid_by"], t["user"]
+            t["amount"] *= -1
+        if t["amount"] > 0:
+            reduced_transactions.append(t)
+    return reduced_transactions
 
-        balances[user] -= amount
-        balances[paid_by] += amount
 
-    # Construct the final list of transactions
-    final_transactions = []
-    for transaction in transactions:
-        user = transaction['user']
-        amount = transaction['amount']
-        paid_by = transaction['paid_by']
+def calculate_user_amounts(transactions):
+    user_amounts = {}
 
-        if user in balances and balances[user] < 0:
-            # The user owes money
-            diff = min(amount, abs(balances[user]))
-            transaction['amount'] -= diff
-            balances[user] += diff
-            balances[paid_by] -= diff
+    for t in transactions:
+        user = t["user"]
+        amount = t["amount"]
+        paid_by = t["paid_by"]
 
-            if transaction['amount'] > 0:
-                final_transactions.append(transaction)
+        if user not in user_amounts:
+            user_amounts[user] = 0
+        if paid_by not in user_amounts:
+            user_amounts[paid_by] = 0
 
-    return final_transactions
+        user_amounts[user] -= amount
+        user_amounts[paid_by] += amount
+
+    result = [{"user": str(k), "amount": v} for k, v in user_amounts.items()]
+    return result
