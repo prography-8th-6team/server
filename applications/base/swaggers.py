@@ -24,6 +24,12 @@ billing_create_api_body = openapi.Schema(
                 },
             ),
         ),
+        'images': openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_FILE,
+            ),
+        ),
     },
     required=['title', 'paid_by', 'paid_date', 'currency', 'settlements'],
 )
