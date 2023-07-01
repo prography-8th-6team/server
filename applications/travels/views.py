@@ -256,9 +256,12 @@ class TravelViewSet(mixins.CreateModelMixin,
                 return Response({"message": "travel이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
             data['travel'] = travel.pk
             settlements = data.pop('settlements', None)
+            if not settlements:
+                return Response({"message": "settle 명단은 반드시 포함되야합니다."}, status=status.HTTP_400_BAD_REQUEST)
             currency = data.pop('currency', None)
             currency = currency if currency and travel.currency == currency else travel.currency
-            serializer = BillingSerializer(data=data, settlements=settlements, currency=currency)
+            images = data.pop('images', None)
+            serializer = BillingSerializer(data=data, settlements=settlements, currency=currency, images=images)
             serializer.is_valid(raise_exception=True)
             serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
