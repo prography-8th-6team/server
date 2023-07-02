@@ -42,7 +42,8 @@ class BillingViewSet(mixins.RetrieveModelMixin,
         operation_summary="billing 상세 API",
         manual_parameters=[
             authorizaion_parameters
-        ]
+        ],
+        responses={200: BillingSerializer()}
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
