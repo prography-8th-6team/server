@@ -16,13 +16,12 @@ class MemberSerializer(serializers.ModelSerializer):
 
 
 class SettlementSerializer(serializers.ModelSerializer):
-    member = MemberSerializer(read_only=True)
+    user = MemberSerializer(read_only=True)
 
     class Meta:
         model = Settlement
         fields = (
-            'id',
-            'member',
+            'user',
             'total_amount',
             'captured_amount',
         )
@@ -85,8 +84,8 @@ class BillingSerializer(serializers.ModelSerializer):
 
     def get_participants(self, obj):
         settlements = obj.settlements.all()
-        members = settlements.values_list('user__nickname', flat=True)
-        return members
+        serializer = SettlementSerializer(settlements, many=True)
+        return serializer.data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
