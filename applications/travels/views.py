@@ -10,7 +10,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from applications.base.response import operation_failure, not_found_data, delete_success, permission_error, \
     invalid_date_range
-from applications.base.swaggers import billing_create_api_body, authorizaion_parameters
+from applications.base.swaggers import billing_create_api_body, authorizaion_parameters, billing_get_response
 
 from applications.billings import SettlementStatus
 from applications.billings.models import Billing, Settlement
@@ -178,41 +178,7 @@ class TravelViewSet(mixins.CreateModelMixin,
             authorizaion_parameters
         ],
         responses={
-            200: openapi.Response(
-                description="Success",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'message': openapi.Schema(type=openapi.TYPE_STRING),
-                        'result': openapi.Schema(
-                            type=openapi.TYPE_OBJECT,
-                            properties={
-                                'balances': openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Schema(
-                                        type=openapi.TYPE_OBJECT,
-                                        properties={
-                                            'user': openapi.Schema(type=openapi.TYPE_INTEGER),
-                                            'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
-                                            'paid_by': openapi.Schema(type=openapi.TYPE_INTEGER),
-                                        },
-                                    ),
-                                ),
-                                'user_amounts': openapi.Schema(
-                                    type=openapi.TYPE_ARRAY,
-                                    items=openapi.Schema(
-                                        type=openapi.TYPE_OBJECT,
-                                        properties={
-                                            'user': openapi.Schema(type=openapi.TYPE_STRING),
-                                            'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
-                                        },
-                                    ),
-                                ),
-                            },
-                        ),
-                    },
-                ),
-            ),
+            200: billing_get_response,
             400: "Operation Error.",
         }
     )
@@ -236,15 +202,21 @@ class TravelViewSet(mixins.CreateModelMixin,
             for billing in billings:
                 for settlement in billing.settlements.exclude(status=SettlementStatus.CHARGED):
                     data = {
-                        'user': settlement.user.id,
+                        'user': {
+                            'id': settlement.user.id,
+                            'nickname': settlement.user.nickname
+                        },
                         'amount': settlement.remaining_amount,
-                        'paid_by': settlement.billing.paid_by.id,
+                        'paid_by': {
+                            'id': settlement.billing.paid_by.id,
+                            'nickname': settlement.billing.paid_by.nickname
+                        },
                     }
                     balances.append(data)
 
             response = {
-                'balances': calculate_balances(balances),
-                'user_amounts': calculate_user_amounts(balances)
+                'balances': calculate_balances(balances) if balances else [],
+                'balance_percent': calculate_user_amounts(balances) if balances else []
             }
             return Response({'message': 'success', 'result': response}, status=status.HTTP_200_OK)
         elif request.method == 'POST':

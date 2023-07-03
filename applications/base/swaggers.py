@@ -50,3 +50,49 @@ authorizaion_parameters = openapi.Parameter(
     'Authorization', openapi.IN_HEADER,
     description="accesstoken은 필수입니다.",
     type=openapi.TYPE_STRING, required=True)
+
+billing_get_response = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'message': openapi.Schema(type=openapi.TYPE_STRING),
+        'result': openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'balances': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'user': openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                    'nickname': openapi.Schema(type=openapi.TYPE_STRING),
+                                },
+                            ),
+                            'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
+                            'paid_by': openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                    'nickname': openapi.Schema(type=openapi.TYPE_STRING),
+                                },
+                            ),
+                        },
+                    ),
+                ),
+                'balance_percent': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                            'nickname': openapi.Schema(type=openapi.TYPE_STRING),
+                            'amount': openapi.Schema(type=openapi.TYPE_NUMBER),
+                        },
+                    ),
+                ),
+            },
+        ),
+    },
+)
