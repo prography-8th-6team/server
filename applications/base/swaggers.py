@@ -81,7 +81,7 @@ billing_get_response = openapi.Schema(
                         },
                     ),
                 ),
-                'user_amounts': openapi.Schema(
+                'balance_percent': openapi.Schema(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Schema(
                         type=openapi.TYPE_OBJECT,

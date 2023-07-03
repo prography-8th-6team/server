@@ -215,8 +215,8 @@ class TravelViewSet(mixins.CreateModelMixin,
                     balances.append(data)
 
             response = {
-                'balances': calculate_balances(balances),
-                'user_amounts': calculate_user_amounts(balances)
+                'balances': calculate_balances(balances) if balances else [],
+                'balance_percent': calculate_user_amounts(balances) if balances else []
             }
             return Response({'message': 'success', 'result': response}, status=status.HTTP_200_OK)
         elif request.method == 'POST':
