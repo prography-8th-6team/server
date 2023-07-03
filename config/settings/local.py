@@ -2,7 +2,7 @@ from config.settings import *
 
 DEBUG = True
 
-SECRET_KEY = 'django-insecure-sb!$c)o$c9!zdf+h%a)crg8*wqsu83bl!hj9ql7w4zg=n(sibc'
+SECRET_KEY = env('LOCAL_SECRET_KEY')
 
 ALLOWED_HOSTS = []
 
@@ -13,11 +13,11 @@ DATABASES = {
     }
 }
 
-WSGI_APPLICATION = 'config.wsgi.develop.application'
+WSGI_APPLICATION = 'config.wsgi.local.application'
 
 STATIC_URL = 'static/'
 
-LOCAL_LOG_DIR = BASE_DIR
+log_path = BASE_DIR
 
 LOGGING['handlers'] = {
     'file': {

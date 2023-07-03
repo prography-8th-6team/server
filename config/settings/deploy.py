@@ -2,7 +2,7 @@ from config.settings import *
 
 DEBUG = False
 
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env('PRD_SECRET_KEY')
 
 ALLOWED_HOSTS = ['*']
 
