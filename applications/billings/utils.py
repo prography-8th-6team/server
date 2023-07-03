@@ -1,10 +1,7 @@
-from decimal import Decimal
-
-
 def calculate_balances(transactions):
     for i, t1 in enumerate(transactions):
         for j, t2 in enumerate(transactions[i + 1:], i + 1):
-            if t1["user"] == t2["paid_by"] and t1["paid_by"] == t2["user"]:
+            if t1["user"]["id"] == t2["paid_by"]["id"] and t1["paid_by"]["id"] == t2["user"]["id"]:
                 t1["amount"] -= t2["amount"]
                 t2["amount"] = 0
 
@@ -29,13 +26,18 @@ def calculate_user_amounts(transactions):
         amount = t["amount"]
         paid_by = t["paid_by"]
 
-        if user not in user_amounts:
-            user_amounts[user] = 0
-        if paid_by not in user_amounts:
-            user_amounts[paid_by] = 0
+        user_id = user["id"]
+        user_nickname = user["nickname"]
+        paid_by_id = paid_by["id"]
+        paid_by_nickname = paid_by["nickname"]
 
-        user_amounts[user] -= amount
-        user_amounts[paid_by] += amount
+        if user_id not in user_amounts:
+            user_amounts[user_id] = {"id": user_id, "nickname": user_nickname, "amount": 0}
+        if paid_by_id not in user_amounts:
+            user_amounts[paid_by_id] = {"id": paid_by_id, "nickname": paid_by_nickname, "amount": 0}
 
-    result = [{"user": str(k), "amount": v} for k, v in user_amounts.items()]
+        user_amounts[user_id]["amount"] -= amount
+        user_amounts[paid_by_id]["amount"] += amount
+
+    result = list(user_amounts.values())
     return result
