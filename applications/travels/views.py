@@ -26,6 +26,7 @@ class TravelViewSet(mixins.CreateModelMixin,
                     mixins.DestroyModelMixin,
                     mixins.ListModelMixin,
                     GenericViewSet):
+    queryset = Travel.objects.all().order_by('-id')
     serializer_class = TravelSerializer
 
     def get_object(self, pk):
@@ -33,9 +34,6 @@ class TravelViewSet(mixins.CreateModelMixin,
             return Travel.objects.get(id=pk)
         except Travel.DoesNotExist:
             return None
-
-    def get_queryset(self):
-        return Travel.objects.all().order_by('-id')
 
     @swagger_auto_schema(
         operation_summary="여행 전체 리스트 API",
@@ -74,7 +72,6 @@ class TravelViewSet(mixins.CreateModelMixin,
         }
     )
     def create(self, request, *args, **kwargs):
-        self.get_queryset()
         data = request.data.copy()
         start_date = data.get("start_date", None)
         end_date = data.get("end_date", None)
@@ -106,7 +103,6 @@ class TravelViewSet(mixins.CreateModelMixin,
         }
     )
     def retrieve(self, request, pk, *args, **kwargs):
-        self.get_queryset()
         travel = self.get_object(pk)
         if not travel:
             return not_found_data
@@ -256,12 +252,14 @@ class TravelViewSet(mixins.CreateModelMixin,
                 return Response({"message": "travel이 존재하지 않습니다."}, status=status.HTTP_404_NOT_FOUND)
             data['travel'] = travel.pk
             settlements = data.pop('settlements', None)
+
             if not settlements:
                 return Response({"message": "settle 명단은 반드시 포함되야합니다."}, status=status.HTTP_400_BAD_REQUEST)
             currency = data.pop('currency', None)
             currency = currency if currency and travel.currency == currency else travel.currency
             images = data.pop('images', None)
             serializer = BillingSerializer(data=data, settlements=settlements, currency=currency, images=images)
+
             serializer.is_valid(raise_exception=True)
             serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

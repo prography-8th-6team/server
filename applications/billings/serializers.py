@@ -77,9 +77,11 @@ class BillingSerializer(serializers.ModelSerializer):
             Settlement.objects.create(billing=billing, user=member.user, total_amount=money)
             billing.total_amount += Money(amount, billing.total_amount_currency)
             billing.save(update_fields=['total_amount'])
+
         if self.images:
             for image in self.images:
                 BillingImage.objects.create(billing=billing, image=image)
+
         return billing
 
     def get_participants(self, obj):
