@@ -46,6 +46,9 @@ class JsonWebTokenMiddleWare(object):
             response = self.get_response(request)
             return response
 
+        except ValueError:
+            return authorization_error
+
         except PermissionDenied:
             return authorization_error
 
