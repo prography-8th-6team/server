@@ -40,4 +40,9 @@ def calculate_user_amounts(transactions):
         user_amounts[paid_by_id]["amount"] += amount
 
     result = list(user_amounts.values())
+
+    positive_total_amount = sum([i['amount'] for i in result if i['amount'] > 0])
+
+    for t in user_amounts.values():
+        t["amount"] = (t["amount"] / positive_total_amount) * 100
     return result
