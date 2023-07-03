@@ -16,13 +16,12 @@ class MemberSerializer(serializers.ModelSerializer):
 
 
 class SettlementSerializer(serializers.ModelSerializer):
-    member = MemberSerializer(read_only=True)
+    user = MemberSerializer(read_only=True)
 
     class Meta:
         model = Settlement
         fields = (
-            'id',
-            'member',
+            'user',
             'total_amount',
             'captured_amount',
         )
@@ -55,11 +54,15 @@ class BillingSerializer(serializers.ModelSerializer):
         )
 
     def __init__(self, *args, **kwargs):
-        settlements = kwargs.pop('settlements', None)
+        import json
+        settlements = kwargs.pop('settlements', '')
         currency = kwargs.pop('currency', None)
         images = kwargs.pop('images', None)
         super().__init__(*args, **kwargs)
-        self.settlements_data = settlements
+        if settlements:
+            self.settlements_data = json.loads(settlements[0])
+        else:
+            self.settlements_data = []
         self.currency = currency
         self.images = images if images else None
 
@@ -74,15 +77,17 @@ class BillingSerializer(serializers.ModelSerializer):
             Settlement.objects.create(billing=billing, user=member.user, total_amount=money)
             billing.total_amount += Money(amount, billing.total_amount_currency)
             billing.save(update_fields=['total_amount'])
-            if self.images:
-                for image in self.images:
-                    BillingImage.objects.create(billing=billing, **image)
+
+        if self.images:
+            for image in self.images:
+                BillingImage.objects.create(billing=billing, image=image)
+
         return billing
 
     def get_participants(self, obj):
         settlements = obj.settlements.all()
-        members = settlements.values_list('user__nickname', flat=True)
-        return members
+        serializer = SettlementSerializer(settlements, many=True)
+        return serializer.data
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
