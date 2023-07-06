@@ -44,5 +44,5 @@ def calculate_user_amounts(transactions):
     positive_total_amount = sum([i['amount'] for i in result if i['amount'] > 0])
 
     for t in user_amounts.values():
-        t["amount"] = (t["amount"] / positive_total_amount) * 100
+        t["amount"] = (t["amount"] / positive_total_amount) * 100 if t['amount'] != 0 else 0
     return result

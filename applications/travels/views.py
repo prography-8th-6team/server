@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import F
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
@@ -216,7 +217,8 @@ class TravelViewSet(mixins.CreateModelMixin,
                             'nickname': settlement.billing.paid_by.nickname
                         },
                     }
-                    balances.append(data)
+                    if data["user"]["id"] != data["paid_by"]["id"]:
+                        balances.append(data)
 
             response = {
                 'balances': calculate_balances(balances) if balances else [],
@@ -304,3 +306,35 @@ class TravelViewSet(mixins.CreateModelMixin,
 
         travel.members.add(self.request.user)
         return Response({'message': 'success'}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary="전체 정산 완료 api",
+        manual_parameters=[
+            authorizaion_parameters
+        ],
+        request_body=no_body,
+        responses={200: '성공적으로 정산이 완료되었습니다.',
+                   404: '해당하는 travel이 없습니다.',
+                   400: '정산할 금액이 없습니다.',
+                   }
+    )
+    @action(detail=True, methods=['post'], url_path='complete-settlement')
+    def complete_settlement(self, request, pk):
+        travel = self.get_object(pk)
+
+        if not travel:
+            return Response({'message': '해당하는 travel이 없습니다.'}, status=status.HTTP_404_NOT_FOUND)
+        settlements = Settlement.objects.filter(user=request.user, billing__travel=travel)\
+            .exclude(status=SettlementStatus.CHARGED)
+        if not settlements:
+            return Response({'message': '정산할 금액이 없습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        settlements.update(captured_amount=F('total_amount'), status=SettlementStatus.CHARGED)
+        for settlement in settlements:
+            if settlement.billing.filter(settlements__status__in=[SettlementStatus.NOT_CHARGED,
+                                                                  SettlementStatus.PARTIALLY_CHARGED]).exists():
+                settlement.billing.captured_amount += settlement.captured_amount
+                settlement.billing.status = SettlementStatus.PARTIALLY_CHARGED
+                settlement.billing.save()
+            else:
+                settlement.billing.update(captured_amount=F('total_amount'), status=SettlementStatus.CHARGED)
+        return Response({'message': '성공적으로 정산이 완료되었습니다.'}, status=status.HTTP_200_OK)
