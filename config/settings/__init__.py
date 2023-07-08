@@ -19,7 +19,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-env = environ.Env(DEBUG=(bool, True))
+env = environ.Env(DEBUG=(bool, True), overwrite=True)
 environ.Env.read_env(
     env_file=os.path.join(BASE_DIR, '.env')
 )
