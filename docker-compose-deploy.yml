@@ -6,6 +6,7 @@ services:
    - "8005:8005"
   volumes:
    - ./nginx/deploy:/etc/nginx/conf.d
+   - /home/ubuntu/ssl:/ssl
   depends_on:
    - web
  web:
