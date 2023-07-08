@@ -81,3 +81,6 @@ __pycache__
 static/
 media/
 migrations/
+
+# log
+*.log
